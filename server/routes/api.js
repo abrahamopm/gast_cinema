@@ -18,6 +18,10 @@ router.delete('/movies/:id', verify, movies.deleteMovie);
 router.get('/movies/:movieId/showtimes', movies.getShowtimes);
 router.post('/showtimes', verify, movies.createShowtime);
 
+// Admin
+const adminController = require('../controllers/admin');
+router.get('/admin/stats', verify, adminController.getStats);
+
 // Bookings
 router.post('/bookings', verify, bookings.createBooking);
 router.get('/bookings', verify, bookings.getUserBookings);
