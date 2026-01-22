@@ -37,7 +37,9 @@ const Home = () => {
                 }}></div>
 
                 <div style={{ position: 'relative', zIndex: 2 }}>
-                    <h1 style={{ color: '#fff', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>GAST CINEMA</h1>
+                    <div style={{ display: 'inline-block', border: '2px solid #D4AF37', padding: '10px 30px', marginBottom: '20px', background: 'rgba(0,0,0,0.5)' }}>
+                        <h1 style={{ color: '#fff', textShadow: '0 4px 10px rgba(0,0,0,0.3)', margin: 0, fontSize: '4rem' }}>GAST <span style={{ color: '#D4AF37' }}>CINEMA</span></h1>
+                    </div>
                     <p style={{ color: '#eee', fontSize: '1.4rem', fontWeight: '300' }}>Experience Cinema in Minimalist Luxury.</p>
                     <button className="btn btn-accent" onClick={() => document.getElementById('now-showing').scrollIntoView({ behavior: 'smooth' })}>
                         Browse Movies
