@@ -11,6 +11,10 @@ const Register = () => {
     const navigate = useNavigate();
     const { showNotification } = useNotification();
 
+    useEffect(() => {
+        document.title = "Gast Cinema - Sign Up";
+    }, []);
+
     const getStrength = (pass) => {
         let strength = 0;
         if (pass.length > 5) strength += 1;

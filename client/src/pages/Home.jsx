@@ -7,6 +7,7 @@ const Home = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        document.title = "Gast Cinema - Home";
         api.get('/movies')
             .then(res => {
                 setMovies(res.data);

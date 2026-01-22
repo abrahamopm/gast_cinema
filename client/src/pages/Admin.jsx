@@ -14,6 +14,7 @@ const Admin = () => {
     const { showNotification } = useNotification();
 
     useEffect(() => {
+        document.title = "Gast Cinema - Admin";
         fetchData();
     }, []);
 

@@ -8,7 +8,10 @@ const MovieDetails = () => {
     const [showtimes, setShowtimes] = useState([]);
 
     useEffect(() => {
-        api.get(`/movies/${id}`).then(res => setMovie(res.data));
+        api.get(`/movies/${id}`).then(res => {
+            setMovie(res.data);
+            document.title = res.data ? `Gast Cinema - ${res.data.title}` : "Gast Cinema";
+        });
         api.get(`/movies/${id}/showtimes`).then(res => setShowtimes(res.data));
     }, [id]);
 

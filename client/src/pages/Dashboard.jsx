@@ -5,6 +5,7 @@ const Dashboard = () => {
     const [bookings, setBookings] = useState([]);
 
     useEffect(() => {
+        document.title = "Gast Cinema - My Tickets";
         api.get('/bookings').then(res => setBookings(res.data)).catch(console.error);
     }, []);
 

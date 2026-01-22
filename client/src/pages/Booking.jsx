@@ -36,6 +36,7 @@ const Booking = () => {
     }
 
     useEffect(() => {
+        document.title = "Gast Cinema - Booking";
         api.get(`/movies/${id}/showtimes`).then(() => {
             // Mock for now including movie title handling
             setShowtime({

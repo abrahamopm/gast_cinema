@@ -8,6 +8,10 @@ const Profile = () => {
     const { showNotification } = useNotification();
     const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
 
+    useEffect(() => {
+        document.title = "Gast Cinema - Profile";
+    }, []);
+
     const handleChange = async (e) => {
         e.preventDefault();
         if (passwords.new !== passwords.confirm) {

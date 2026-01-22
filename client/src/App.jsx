@@ -15,6 +15,7 @@ import './index.css';
 import { NotificationProvider } from './context/NotificationContext';
 
 import Profile from './pages/Profile';
+import Chatbot from './components/Chatbot';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
                 <Route path="/admin" element={<Admin />} />
               </Routes>
             </main>
+            <Chatbot />
             <Footer />
           </div>
         </Router>

@@ -11,6 +11,10 @@ const Login = () => {
     const navigate = useNavigate();
     const { showNotification } = useNotification();
 
+    useEffect(() => {
+        document.title = "Gast Cinema - Login";
+    }, []);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
