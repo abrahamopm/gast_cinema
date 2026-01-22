@@ -7,11 +7,28 @@ const Register = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const navigate = useNavigate();
     const { showNotification } = useNotification();
 
+    const getStrength = (pass) => {
+        let strength = 0;
+        if (pass.length > 5) strength += 1;
+        if (pass.length > 10) strength += 1;
+        if (/[A-Z]/.test(pass)) strength += 1;
+        if (/[0-9]/.test(pass)) strength += 1;
+        return strength;
+    }
+
+    const strength = getStrength(password);
+    const strengthColor = ['#ddd', '#d9534f', '#f0ad4e', '#5bc0de', '#5cb85c'][strength];
+    const strengthText = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'][strength];
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (password !== confirmPassword) {
+            return showNotification('Passwords do not match', 'error');
+        }
         try {
             await api.post('/auth/register', { name, email, password });
             showNotification('Registration Successful! Please login.', 'success');
@@ -47,16 +64,7 @@ const Register = () => {
                         value={name}
                         onChange={e => setName(e.target.value)}
                         required
-                        style={{
-                            width: '100%',
-                            padding: '15px',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            fontSize: '1rem',
-                            outline: 'none'
-                        }}
-                        onFocus={e => e.target.style.borderColor = '#D4AF37'}
-                        onBlur={e => e.target.style.borderColor = '#ddd'}
+                        style={{ width: '100%', padding: '15px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '1rem', outline: 'none' }}
                     />
                     <input
                         type="email"
@@ -64,33 +72,35 @@ const Register = () => {
                         value={email}
                         onChange={e => setEmail(e.target.value)}
                         required
-                        style={{
-                            width: '100%',
-                            padding: '15px',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            fontSize: '1rem',
-                            outline: 'none'
-                        }}
-                        onFocus={e => e.target.style.borderColor = '#D4AF37'}
-                        onBlur={e => e.target.style.borderColor = '#ddd'}
+                        style={{ width: '100%', padding: '15px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '1rem', outline: 'none' }}
                     />
+
+                    <div style={{ textAlign: 'left' }}>
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            required
+                            style={{ width: '100%', padding: '15px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '1rem', outline: 'none' }}
+                        />
+                        {password && (
+                            <div style={{ marginTop: '5px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{ flex: 1, height: '4px', background: '#eee', borderRadius: '2px' }}>
+                                    <div style={{ width: `${strength * 25}%`, height: '100%', background: strengthColor, transition: 'all 0.3s' }}></div>
+                                </div>
+                                <span style={{ color: strengthColor, fontWeight: 'bold' }}>{strengthText}</span>
+                            </div>
+                        )}
+                    </div>
+
                     <input
                         type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
+                        placeholder="Confirm Password"
+                        value={confirmPassword}
+                        onChange={e => setConfirmPassword(e.target.value)}
                         required
-                        style={{
-                            width: '100%',
-                            padding: '15px',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            fontSize: '1rem',
-                            outline: 'none'
-                        }}
-                        onFocus={e => e.target.style.borderColor = '#D4AF37'}
-                        onBlur={e => e.target.style.borderColor = '#ddd'}
+                        style={{ width: '100%', padding: '15px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '1rem', outline: 'none' }}
                     />
 
                     <button type="submit" className="btn btn-accent" style={{ padding: '15px', fontSize: '1rem' }}>

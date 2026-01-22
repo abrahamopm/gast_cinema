@@ -14,6 +14,8 @@ import './index.css';
 
 import { NotificationProvider } from './context/NotificationContext';
 
+import Profile from './pages/Profile';
+
 function App() {
   return (
     <AuthProvider>
@@ -29,6 +31,7 @@ function App() {
                 <Route path="/movie/:id" element={<MovieDetails />} />
                 <Route path="/booking/:id" element={<Booking />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route path="/admin" element={<Admin />} />
               </Routes>
             </main>

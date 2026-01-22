@@ -6,6 +6,7 @@ const bookingSchema = new mongoose.Schema({
     seats: [String],
     totalPrice: Number,
     paymentProvider: String,
+    phone: String,
     status: { type: String, default: 'Confirmed' }
 }, { timestamps: true });
 

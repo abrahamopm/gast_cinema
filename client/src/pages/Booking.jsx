@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import Modal from '../components/Modal';
 
 const Booking = () => {
     const { id } = useParams();
@@ -12,6 +13,10 @@ const Booking = () => {
     const [showtime, setShowtime] = useState(null);
     const [selectedSeats, setSelectedSeats] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [phone, setPhone] = useState('');
+
+    // Confirmation Modal State
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, provider: '' });
 
     // Logos configuration
     const providers = [
@@ -32,11 +37,11 @@ const Booking = () => {
 
     useEffect(() => {
         api.get(`/movies/${id}/showtimes`).then(() => {
-            // Mock for now
+            // Mock for now including movie title handling
             setShowtime({
                 _id: id,
                 price: 150,
-                seats: { 'A1': 'taken', 'B3': 'taken' }
+                seats: { 'A1': 'taken', 'B3': 'taken' },
             });
         });
     }, [id]);
@@ -50,8 +55,15 @@ const Booking = () => {
         }
     };
 
-    const handlePayment = async (providerName) => {
+    const initiatePayment = (providerName) => {
         if (!user) return showNotification('Please Login first', 'error');
+        if (selectedSeats.length === 0) return showNotification('Select at least one seat', 'error');
+        if (!phone) return showNotification('Please enter your phone number', 'error');
+
+        setConfirmModal({ isOpen: true, provider: providerName });
+    }
+
+    const processPayment = async () => {
         setLoading(true);
         // Simulate API delay
         await new Promise(r => setTimeout(r, 2000));
@@ -60,14 +72,16 @@ const Booking = () => {
             await api.post('/bookings', {
                 showtimeId: id,
                 seats: selectedSeats,
-                paymentProvider: providerName
+                paymentProvider: confirmModal.provider,
+                phone: phone
             });
-            showNotification(`Payment Successful via ${providerName}!`, 'success');
+            showNotification(`Payment Successful via ${confirmModal.provider}!`, 'success');
             navigate('/dashboard');
         } catch (err) {
             showNotification('Payment Failed', 'error');
         } finally {
             setLoading(false);
+            setConfirmModal({ isOpen: false, provider: '' });
         }
     };
 
@@ -75,6 +89,24 @@ const Booking = () => {
 
     return (
         <div className="container" style={{ paddingBottom: '120px' }}>
+
+            {/* Confirmation Modal */}
+            <Modal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={processPayment}
+                title="Confirm Your Booking"
+                message={`
+             Movie Ticket for ${selectedSeats.length} person(s).
+             Seats: ${selectedSeats.join(', ')}
+             Total Price: ${selectedSeats.length * showtime.price} ETB
+             Phone: ${phone}
+             Payment Method: ${confirmModal.provider}
+             
+             Proceed to payment?
+          `}
+            />
+
             <h2 style={{ textAlign: 'center', margin: '40px 0' }}>Select Your Seats</h2>
 
             {/* Screen Visual */}
@@ -128,7 +160,6 @@ const Booking = () => {
                                 {seat}
                             </button>
 
-                            {/* Tooltip */}
                             <div className="tooltip">
                                 {isTaken ? 'Has Taken' : `Row ${seat.charAt(0)} - Seat ${seat.slice(1)}`}
                             </div>
@@ -167,31 +198,47 @@ const Booking = () => {
                 boxShadow: '0 -4px 20px rgba(0,0,0,0.05)'
             }}>
                 <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-                    <div>
-                        <span style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>TOTAL PRICE</span>
-                        <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{selectedSeats.length * showtime.price} ETB</span>
+                    <div style={{ flex: 1, minWidth: '200px' }}>
+                        <input
+                            type="tel"
+                            placeholder="Enter Phone (Required)"
+                            value={phone}
+                            onChange={e => setPhone(e.target.value)}
+                            style={{
+                                width: '100%', padding: '10px',
+                                border: '1px solid #ddd', borderRadius: '4px',
+                                fontSize: '0.9rem'
+                            }}
+                        />
                     </div>
 
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        {providers.map(p => (
-                            <button
-                                key={p.name}
-                                onClick={() => handlePayment(p.name)}
-                                className="btn"
-                                disabled={loading || selectedSeats.length === 0}
-                                style={{
-                                    padding: 0,
-                                    border: 'none',
-                                    opacity: selectedSeats.length === 0 ? 0.5 : 1,
-                                    transition: 'transform 0.2s',
-                                    overflow: 'hidden',
-                                    borderRadius: '4px'
-                                }}
-                                title={`Pay with ${p.name}`}
-                            >
-                                <img src={p.logo} alt={p.name} style={{ height: '50px', display: 'block' }} />
-                            </button>
-                        ))}
+                    <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                        <div style={{ textAlign: 'right' }}>
+                            <span style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>TOTAL</span>
+                            <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{selectedSeats.length * showtime.price} ETB</span>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            {providers.map(p => (
+                                <button
+                                    key={p.name}
+                                    onClick={() => initiatePayment(p.name)}
+                                    className="btn"
+                                    disabled={loading || selectedSeats.length === 0}
+                                    style={{
+                                        padding: 0,
+                                        border: 'none',
+                                        opacity: selectedSeats.length === 0 ? 0.5 : 1,
+                                        transition: 'transform 0.2s',
+                                        overflow: 'hidden',
+                                        borderRadius: '4px'
+                                    }}
+                                    title={`Pay with ${p.name}`}
+                                >
+                                    <img src={p.logo} alt={p.name} style={{ height: '50px', display: 'block' }} />
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

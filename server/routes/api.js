@@ -7,6 +7,7 @@ const verify = require('../middleware/auth');
 // Auth
 router.post('/auth/register', auth.register);
 router.post('/auth/login', auth.login);
+router.post('/auth/password', verify, auth.changePassword);
 
 // Movies
 router.get('/movies', movies.getMovies);

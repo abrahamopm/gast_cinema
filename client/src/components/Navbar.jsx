@@ -27,7 +27,9 @@ const Navbar = () => {
                             {user.role !== 'admin' && <Link to="/dashboard" className="nav-link">My Tickets</Link>}
                             {user.role === 'admin' && <Link to="/admin" className="nav-link">Admin Portal</Link>}
                             <button onClick={handleLogout} className="btn">Logout</button>
-                            <FaUserCircle size={24} />
+                            <Link to="/profile" title="My Profile" className="nav-link" style={{ display: 'flex' }}>
+                                <FaUserCircle size={26} />
+                            </Link>
                         </>
                     ) : (
                         <>
