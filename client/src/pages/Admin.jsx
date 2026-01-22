@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
+import Modal from '../components/Modal';
 
 const Admin = () => {
     const [movies, setMovies] = useState([]);
@@ -9,6 +10,7 @@ const Admin = () => {
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [modal, setModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
     const { showNotification } = useNotification();
 
     useEffect(() => {
@@ -61,15 +63,22 @@ const Admin = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    const handleDeleteClick = (id) => {
+        setModal({
+            isOpen: true,
+            title: 'Remove Movie',
+            message: 'Are you sure you want to remove this movie from the collection?',
+            onConfirm: () => handleDelete(id)
+        });
+    };
+
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to remove this movie from the collection?')) {
-            try {
-                await api.delete(`/movies/${id}`);
-                showNotification('Movie Removed', 'success');
-                fetchData();
-            } catch (err) {
-                showNotification('Delete Failed', 'error');
-            }
+        try {
+            await api.delete(`/movies/${id}`);
+            showNotification('Movie Removed', 'success');
+            fetchData();
+        } catch (err) {
+            showNotification('Delete Failed', 'error');
         }
     };
 
@@ -81,6 +90,14 @@ const Admin = () => {
 
     return (
         <div style={{ paddingTop: '40px', paddingBottom: '80px' }}>
+            <Modal
+                isOpen={modal.isOpen}
+                onClose={() => setModal({ ...modal, isOpen: false })}
+                onConfirm={modal.onConfirm}
+                title={modal.title}
+                message={modal.message}
+            />
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
                 <div>
                     <h2>Admin Dashboard</h2>
@@ -196,7 +213,7 @@ const Admin = () => {
                                 </div>
                             </div>
                             <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <button className="btn" style={{ fontSize: '0.8rem', padding: '8px 15px' }} onClick={() => handleDelete(m._id)}>Remove</button>
+                                <button className="btn" style={{ fontSize: '0.8rem', padding: '8px 15px' }} onClick={() => handleDeleteClick(m._id)}>Remove</button>
                                 <button
                                     className="btn btn-accent"
                                     style={{ fontSize: '0.8rem', padding: '8px 15px', border: 'none' }}
