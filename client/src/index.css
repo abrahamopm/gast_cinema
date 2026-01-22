@@ -153,9 +153,8 @@ nav {
 
 .hero h1 {
   margin-bottom: 24px;
-  background: linear-gradient(45deg, #000, #333);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #fff;
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .hero p {
