@@ -13,6 +13,13 @@ const Booking = () => {
     const [selectedSeats, setSelectedSeats] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    // Logos configuration
+    const providers = [
+        { name: 'Telebirr', color: '#00A4E4', logo: 'https://placehold.co/120x50/00A4E4/ffffff?text=telebirr' },
+        { name: 'CBE Birr', color: '#880088', logo: 'https://placehold.co/120x50/880088/ffffff?text=CBE+Birr' },
+        { name: 'Amole', color: '#003366', logo: 'https://placehold.co/120x50/003366/ffffff?text=Amole' }
+    ];
+
     // Grid Configuration
     const rows = 5;
     const cols = 8;
@@ -43,7 +50,7 @@ const Booking = () => {
         }
     };
 
-    const handlePayment = async (provider) => {
+    const handlePayment = async (providerName) => {
         if (!user) return showNotification('Please Login first', 'error');
         setLoading(true);
         // Simulate API delay
@@ -53,9 +60,9 @@ const Booking = () => {
             await api.post('/bookings', {
                 showtimeId: id,
                 seats: selectedSeats,
-                paymentProvider: provider
+                paymentProvider: providerName
             });
-            showNotification(`Payment Successful via ${provider}!`, 'success');
+            showNotification(`Payment Successful via ${providerName}!`, 'success');
             navigate('/dashboard');
         } catch (err) {
             showNotification('Payment Failed', 'error');
@@ -67,7 +74,7 @@ const Booking = () => {
     if (!showtime) return <div className="container" style={{ padding: '40px' }}>Loading Showtime...</div>;
 
     return (
-        <div className="container" style={{ paddingBottom: '120px' }}> {/* Padding for sticky footer */}
+        <div className="container" style={{ paddingBottom: '120px' }}>
             <h2 style={{ textAlign: 'center', margin: '40px 0' }}>Select Your Seats</h2>
 
             {/* Screen Visual */}
@@ -159,23 +166,30 @@ const Booking = () => {
                 zIndex: 100,
                 boxShadow: '0 -4px 20px rgba(0,0,0,0.05)'
             }}>
-                <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
                     <div>
                         <span style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>TOTAL PRICE</span>
                         <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{selectedSeats.length * showtime.price} ETB</span>
-                        <span style={{ marginLeft: '10px', fontSize: '0.9rem' }}>({selectedSeats.length} tickets)</span>
                     </div>
 
                     <div style={{ display: 'flex', gap: '10px' }}>
-                        {['Telebirr', 'Amole'].map(provider => (
+                        {providers.map(p => (
                             <button
-                                key={provider}
-                                onClick={() => handlePayment(provider)}
-                                className="btn btn-accent"
+                                key={p.name}
+                                onClick={() => handlePayment(p.name)}
+                                className="btn"
                                 disabled={loading || selectedSeats.length === 0}
-                                style={{ padding: '10px 20px', fontSize: '0.9rem', opacity: selectedSeats.length === 0 ? 0.5 : 1 }}
+                                style={{
+                                    padding: 0,
+                                    border: 'none',
+                                    opacity: selectedSeats.length === 0 ? 0.5 : 1,
+                                    transition: 'transform 0.2s',
+                                    overflow: 'hidden',
+                                    borderRadius: '4px'
+                                }}
+                                title={`Pay with ${p.name}`}
                             >
-                                {provider}
+                                <img src={p.logo} alt={p.name} style={{ height: '50px', display: 'block' }} />
                             </button>
                         ))}
                     </div>
@@ -202,6 +216,9 @@ const Booking = () => {
           opacity: 0;
           transition: all 0.2s ease;
           z-index: 10;
+        }
+        .btn:hover img {
+           transform: scale(1.05);
         }
       `}</style>
         </div>

@@ -20,12 +20,29 @@ const Home = () => {
 
     return (
         <div>
-            <section className="hero">
-                <h1>GAST CINEMA</h1>
-                <p>Experience Cinema in Minimalist Luxury.</p>
-                <button className="btn btn-accent" onClick={() => document.getElementById('now-showing').scrollIntoView({ behavior: 'smooth' })}>
-                    Browse Movies
-                </button>
+            <section className="hero" style={{
+                position: 'relative',
+                backgroundImage: 'url("https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2070&auto=format&fit=crop")',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                color: '#fff',
+                padding: '160px 20px',
+                marginBottom: '60px'
+            }}>
+                <div style={{
+                    position: 'absolute',
+                    top: 0, left: 0, width: '100%', height: '100%',
+                    background: 'rgba(0,0,0,0.6)', // Dark overlay for readability
+                    zIndex: 1
+                }}></div>
+
+                <div style={{ position: 'relative', zIndex: 2 }}>
+                    <h1 style={{ color: '#fff', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>GAST CINEMA</h1>
+                    <p style={{ color: '#eee', fontSize: '1.4rem', fontWeight: '300' }}>Experience Cinema in Minimalist Luxury.</p>
+                    <button className="btn btn-accent" onClick={() => document.getElementById('now-showing').scrollIntoView({ behavior: 'smooth' })}>
+                        Browse Movies
+                    </button>
+                </div>
             </section>
 
             <div id="now-showing" className="container" style={{ paddingBottom: '60px' }}>

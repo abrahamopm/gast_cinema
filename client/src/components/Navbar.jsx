@@ -19,8 +19,8 @@ const Navbar = () => {
                 <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
                     {user ? (
                         <>
-                            <Link to="/dashboard">Dashboard</Link>
-                            {user.role === 'admin' && <Link to="/admin">Admin</Link>}
+                            {user.role !== 'admin' && <Link to="/dashboard">My Tickets</Link>}
+                            {user.role === 'admin' && <Link to="/admin">Admin Portal</Link>}
                             <button onClick={handleLogout} className="btn">Logout</button>
                             <FaUserCircle size={24} />
                         </>
