@@ -5,6 +5,7 @@ const Showtime = require('../models/Showtime');
 exports.getMovies = async (req, res) => res.json(await Movie.find());
 exports.getMovie = async (req, res) => res.json(await Movie.findById(req.params.id));
 exports.createMovie = async (req, res) => res.json(await new Movie(req.body).save());
+exports.updateMovie = async (req, res) => res.json(await Movie.findByIdAndUpdate(req.params.id, req.body, { new: true }));
 exports.deleteMovie = async (req, res) => res.json(await Movie.findByIdAndDelete(req.params.id));
 
 // Showtimes

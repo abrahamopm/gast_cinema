@@ -12,6 +12,7 @@ router.post('/auth/login', auth.login);
 router.get('/movies', movies.getMovies);
 router.get('/movies/:id', movies.getMovie);
 router.post('/movies', verify, movies.createMovie); // Protect admin routes in real app
+router.put('/movies/:id', verify, movies.updateMovie);
 router.delete('/movies/:id', verify, movies.deleteMovie);
 
 // Showtimes

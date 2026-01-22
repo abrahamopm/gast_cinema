@@ -7,6 +7,7 @@ const Admin = () => {
     const [stats, setStats] = useState(null);
     const [form, setForm] = useState({ title: '', description: '', poster: '', trailer: '', featured: false });
     const [isAdding, setIsAdding] = useState(false);
+    const [editingId, setEditingId] = useState(null);
     const [loading, setLoading] = useState(true);
     const { showNotification } = useNotification();
 
@@ -32,14 +33,32 @@ const Admin = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await api.post('/movies', form);
-            showNotification('Movie Added Successfully', 'success');
-            setForm({ title: '', description: '', poster: '', trailer: '', featured: false });
-            setIsAdding(false);
+            if (editingId) {
+                await api.put(`/movies/${editingId}`, form);
+                showNotification('Movie Updated Successfully', 'success');
+            } else {
+                await api.post('/movies', form);
+                showNotification('Movie Added Successfully', 'success');
+            }
+
+            resetForm();
             fetchData();
         } catch (err) {
-            showNotification('Failed to add movie', 'error');
+            showNotification('Operation Failed', 'error');
         }
+    };
+
+    const handleEdit = (movie) => {
+        setForm({
+            title: movie.title,
+            description: movie.description,
+            poster: movie.poster,
+            trailer: movie.trailer || '',
+            featured: movie.featured
+        });
+        setEditingId(movie._id);
+        setIsAdding(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleDelete = async (id) => {
@@ -47,12 +66,18 @@ const Admin = () => {
             try {
                 await api.delete(`/movies/${id}`);
                 showNotification('Movie Removed', 'success');
-                fetchData(); // Reload to update stats too
+                fetchData();
             } catch (err) {
                 showNotification('Delete Failed', 'error');
             }
         }
     };
+
+    const resetForm = () => {
+        setForm({ title: '', description: '', poster: '', trailer: '', featured: false });
+        setIsAdding(false);
+        setEditingId(null);
+    }
 
     return (
         <div style={{ paddingTop: '40px', paddingBottom: '80px' }}>
@@ -61,7 +86,9 @@ const Admin = () => {
                     <h2>Admin Dashboard</h2>
                     <p style={{ color: '#666' }}>Overview & Management</p>
                 </div>
-                <button className="btn btn-accent" onClick={() => setIsAdding(!isAdding)}>
+                <button className="btn btn-accent" onClick={() => {
+                    if (isAdding) resetForm(); else setIsAdding(true);
+                }}>
                     {isAdding ? 'Cancel' : '+ Add Movie'}
                 </button>
             </div>
@@ -88,7 +115,7 @@ const Admin = () => {
                 )}
             </div>
 
-            {/* Add Form (Conditionally Rendered) */}
+            {/* Add/Edit Form */}
             {isAdding && (
                 <div style={{
                     background: '#fff',
@@ -98,42 +125,47 @@ const Admin = () => {
                     marginBottom: '60px',
                     animation: 'slideDown 0.5s ease'
                 }}>
-                    <h3 style={{ marginBottom: '30px' }}>Add New Feature</h3>
+                    <h3 style={{ marginBottom: '30px' }}>{editingId ? 'Edit Movie' : 'Add New Feature'}</h3>
                     <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-                        {/* ... Form fields identical to previous version ... */}
                         <div style={{ gridColumn: 'span 2' }}>
                             <label style={{ display: 'block', marginBottom: '10px', fontSize: '0.9rem', letterSpacing: '1px', color: '#666' }}>TITLE</label>
                             <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required
                                 style={{ width: '100%', padding: '15px', border: '1px solid #ddd', fontSize: '1rem', outline: 'none' }}
                             />
                         </div>
-                        {/* Keeping it brief for this write, assuming user wants functionality. I will copy full form fields. */}
+
                         <div style={{ gridColumn: 'span 2' }}>
                             <label style={{ display: 'block', marginBottom: '10px', fontSize: '0.9rem', letterSpacing: '1px', color: '#666' }}>SYNOPSIS</label>
                             <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows="4"
                                 style={{ width: '100%', padding: '15px', border: '1px solid #ddd', fontSize: '1rem', outline: 'none', resize: 'vertical' }}
                             />
                         </div>
+
                         <div>
                             <label style={{ display: 'block', marginBottom: '10px', fontSize: '0.9rem', letterSpacing: '1px', color: '#666' }}>POSTER URL</label>
                             <input value={form.poster} onChange={e => setForm({ ...form, poster: e.target.value })}
                                 style={{ width: '100%', padding: '15px', border: '1px solid #ddd', fontSize: '1rem', outline: 'none' }}
                             />
                         </div>
+
                         <div>
                             <label style={{ display: 'block', marginBottom: '10px', fontSize: '0.9rem', letterSpacing: '1px', color: '#666' }}>TRAILER URL</label>
                             <input value={form.trailer} onChange={e => setForm({ ...form, trailer: e.target.value })}
                                 style={{ width: '100%', padding: '15px', border: '1px solid #ddd', fontSize: '1rem', outline: 'none' }}
                             />
                         </div>
-                        <div style={{ gridColumn: 'span 2' }}>
+
+                        <div style={{ gridColumn: 'span 2', display: 'flex', gap: '20px', alignItems: 'center' }}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
                                 <input type="checkbox" checked={form.featured} onChange={e => setForm({ ...form, featured: e.target.checked })} />
                                 Mark as Featured Event
                             </label>
                         </div>
+
                         <div style={{ gridColumn: 'span 2' }}>
-                            <button type="submit" className="btn btn-accent" style={{ width: '100%', padding: '15px' }}>Publish Movie</button>
+                            <button type="submit" className="btn btn-accent" style={{ width: '100%', padding: '15px' }}>
+                                {editingId ? 'Update Movie' : 'Publish Movie'}
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -165,7 +197,13 @@ const Admin = () => {
                             </div>
                             <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <button className="btn" style={{ fontSize: '0.8rem', padding: '8px 15px' }} onClick={() => handleDelete(m._id)}>Remove</button>
-                                <button className="btn btn-accent" style={{ fontSize: '0.8rem', padding: '8px 15px', border: 'none' }}>Edit</button>
+                                <button
+                                    className="btn btn-accent"
+                                    style={{ fontSize: '0.8rem', padding: '8px 15px', border: 'none' }}
+                                    onClick={() => handleEdit(m)}
+                                >
+                                    Edit
+                                </button>
                             </div>
                         </div>
                     ))
