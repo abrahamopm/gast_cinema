@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 
@@ -9,6 +9,8 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from || { pathname: "/" };
     const { showNotification } = useNotification();
 
     useEffect(() => {
@@ -23,7 +25,7 @@ const Login = () => {
             console.log("Login success:", res.data);
             login(res.data);
             showNotification('Welcome back!', 'success');
-            navigate('/');
+            navigate(from, { replace: true });
         } catch (err) {
             console.error("Login error:", err);
             showNotification('Login Failed: ' + (err.response?.data?.error || err.message), 'error');
@@ -97,7 +99,7 @@ const Login = () => {
                 </form>
 
                 <p style={{ marginTop: '20px', color: '#666' }}>
-                    New to Gast Cinema? <Link to="/register" style={{ color: '#D4AF37', fontWeight: 'bold' }}>Create Account</Link>
+                    New to Gast Cinema? <Link to="/register" state={{ from: location.state?.from }} style={{ color: '#D4AF37', fontWeight: 'bold' }}>Create Account</Link>
                 </p>
             </div>
         </div>

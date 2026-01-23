@@ -1,11 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 const MovieDetails = () => {
     const { id } = useParams();
     const [movie, setMovie] = useState(null);
     const [showtimes, setShowtimes] = useState([]);
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const { showNotification } = useNotification();
+
+    const handleBook = (st) => {
+        if (!user) {
+            showNotification('Please log in or create an account to book tickets.', 'info');
+            navigate('/login', { state: { from: `/booking/${st._id}` } });
+            return;
+        }
+        navigate(`/booking/${st._id}`);
+    };
 
     useEffect(() => {
         api.get(`/movies/${id}`).then(res => {
@@ -44,7 +58,7 @@ const MovieDetails = () => {
 
                     <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
                         {showtimes.length > 0 ? showtimes.map(st => (
-                            <Link key={st._id} to={`/booking/${st._id}`} className="btn" style={{
+                            <button key={st._id} onClick={() => handleBook(st)} className="btn" style={{
                                 fontWeight: 'bold',
                                 background: 'rgba(255,255,255,0.1)',
                                 color: '#fff',
@@ -53,11 +67,12 @@ const MovieDetails = () => {
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 padding: '10px 20px',
-                                textDecoration: 'none'
+                                textDecoration: 'none',
+                                cursor: 'pointer'
                             }}>
                                 <span style={{ fontSize: '1.2rem', marginBottom: '5px' }}>{st.time}</span>
                                 <span style={{ fontSize: '0.8rem', color: '#D4AF37' }}>{st.date}</span>
-                            </Link>
+                            </button>
                         )) : <p>No showtimes available.</p>}
                     </div>
                 </div>

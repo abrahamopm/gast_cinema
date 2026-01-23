@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 
@@ -9,6 +9,7 @@ const Register = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const navigate = useNavigate();
+    const location = useLocation();
     const { showNotification } = useNotification();
 
     useEffect(() => {
@@ -36,7 +37,7 @@ const Register = () => {
         try {
             await api.post('/auth/register', { name, email, password });
             showNotification('Registration Successful! Please login.', 'success');
-            navigate('/login');
+            navigate('/login', { state: { from: location.state?.from } });
         } catch (err) {
             showNotification('Registration Failed: ' + (err.response?.data?.error || err.message), 'error');
         }
@@ -113,7 +114,7 @@ const Register = () => {
                 </form>
 
                 <p style={{ marginTop: '20px', color: '#666' }}>
-                    Already a memeber? <Link to="/login" style={{ color: '#D4AF37', fontWeight: 'bold' }}>Sign In</Link>
+                    Already a memeber? <Link to="/login" state={{ from: location.state?.from }} style={{ color: '#D4AF37', fontWeight: 'bold' }}>Sign In</Link>
                 </p>
             </div>
         </div>
