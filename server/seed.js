@@ -7,68 +7,49 @@ const bcrypt = require('bcryptjs');
 
 const movies = [
     {
-        title: "Dune: Part Two",
-        description: "Paul Atreides unites with Chani and the Fremen while on a warpath of revenge against the conspirators who destroyed his family. Facing a choice between the love of his life and the fate of the known universe, he endeavors to prevent a terrible future only he can foresee.",
-        poster: "https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg",
+        title: "Chainsaw Man: The Movie - Reze Arc",
+        description: "Denji continues his life as a Devil Hunter when he meets Reze, a mysterious girl who works at a café. As their relationship develops, Denji discovers that Reze harbors a dark secret that could change everything. An explosive adaptation of the beloved Reze Arc from the hit manga series.",
+        poster: "https://image.tmdb.org/t/p/w500/yVwLRqakGXsMPMvKSAkXuDTEuNm.jpg",
+        trailer: "https://www.youtube.com/watch?v=dFlDRhvM4L0",
         featured: true,
-        genre: "Sci-Fi / Adventure",
-        duration: 166
+        genre: "Animation / Action / Horror",
+        duration: 120
     },
     {
-        title: "Oppenheimer",
-        description: "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb. A cinematic masterpiece exploring the depths of genius and the weight of consequence.",
-        poster: "https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
+        title: "The Fantastic Four: First Steps",
+        description: "Set in a retro-futuristic 1960s world, Marvel's First Family—Reed Richards, Sue Storm, Johnny Storm, and Ben Grimm—must harness their newfound powers to save Earth from the cosmic threat of Galactus and his herald, the Silver Surfer.",
+        poster: "https://image.tmdb.org/t/p/w500/zDGhneuCEGzjXwjLJfwz0m9WQfD.jpg",
+        trailer: "https://www.youtube.com/watch?v=oBKvBAeGYhA",
         featured: true,
-        genre: "Biography / Drama",
-        duration: 180
+        genre: "Action / Sci-Fi / Adventure",
+        duration: 150
     },
     {
-        title: "Poor Things",
-        description: "Brought back to life by an unorthodox scientist, a young woman runs off with a debauched lawyer on a whirlwind adventure across the continents. Free from the prejudices of her times, she grows steadfast in her purpose to stand for equality and liberation.",
-        poster: "https://image.tmdb.org/t/p/w500/kCGlIMHnOm8JPXq3rXM6c5wMxc8.jpg",
-        featured: false,
-        genre: "Sci-Fi / Romance",
-        duration: 141
-    },
-    {
-        title: "The Godfather",
-        description: "Spanning the years 1945 to 1955, a chronicle of the fictional Italian-American Corleone crime family. When organized crime family patriarch, Vito Corleone barely survives an attempt on his life, his youngest son, Michael steps in to take care of the would-be killers, launching a campaign of bloody revenge.",
-        poster: "https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg",
+        title: "Superman",
+        description: "The Man of Steel embarks on a journey to reconcile his Kryptonian heritage with his human upbringing as Clark Kent. James Gunn's vision brings a fresh take on the iconic superhero as he faces new threats and discovers what it truly means to be Earth's greatest protector.",
+        poster: "https://image.tmdb.org/t/p/w500/dL6xNo8lsqSWhWpfsNMfJDKS3mJ.jpg",
+        trailer: "https://www.youtube.com/watch?v=vLLCpLOfZ7Q",
         featured: true,
-        genre: "Crime / Drama",
-        duration: 175
+        genre: "Action / Sci-Fi / Adventure",
+        duration: 145
     },
     {
-        title: "Spider-Man: Across the Spider-Verse",
-        description: "After reuniting with Gwen Stacy, Brooklyn’s full-time, friendly neighborhood Spider-Man is catapulted across the Multiverse, where he encounters the Spider Society, a team of Spider-People charged with protecting the Multiverse’s very existence.",
-        poster: "https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg",
-        featured: false,
-        genre: "Animation / Action",
-        duration: 140
-    },
-    {
-        title: "Interstellar",
-        description: "The adventures of a group of explorers who make use of a newly discovered wormhole to surpass the limitations on human space travel and conquer the vast distances involved in an interstellar voyage.",
-        poster: "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+        title: "The Batman",
+        description: "When a sadistic serial killer begins murdering key political figures in Gotham, Batman is forced to investigate the city's hidden corruption and question his family's involvement. Robert Pattinson delivers a gripping performance as the Dark Knight in this noir-driven masterpiece.",
+        poster: "https://image.tmdb.org/t/p/w500/74xTEgt7R36Fber9oh4mQoqfAO6.jpg",
+        trailer: "https://www.youtube.com/watch?v=mqqft2x_Aa4",
         featured: true,
-        genre: "Sci-Fi / Adventure",
-        duration: 169
+        genre: "Action / Crime / Drama",
+        duration: 176
     },
     {
-        title: "Parasite",
-        description: "All unemployed, Ki-taek's family takes peculiar interest in the wealthy and glamorous Parks for their livelihood until they get entangled in an unexpected incident.",
-        poster: "https://image.tmdb.org/t/p/w500/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg",
-        featured: false,
-        genre: "Thriller / Drama",
-        duration: 132
-    },
-    {
-        title: "The Dark Knight",
-        description: "Batman raises the stakes in his war on crime. With the help of Lt. Jim Gordon and District Attorney Harvey Dent, Batman sets out to dismantle the remaining criminal organizations that plague the streets. The partnership proves to be effective, but they soon find themselves prey to a reign of chaos unleashed by a rising criminal mastermind known to the terrified citizens of Gotham as the Joker.",
-        poster: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+        title: "Demon Slayer: Infinity Castle",
+        description: "Tanjiro and the Hashira face their ultimate battle as they storm Muzan Kibutsuji's Infinity Castle. The Demon Slayer Corps must confront the Upper Rank demons in an epic showdown that will determine the fate of humanity. Prepare for breathtaking animation and heart-pounding action.",
+        poster: "https://image.tmdb.org/t/p/w500/xGZ8ND5i4dctXC3lJLq7ybJfkBI.jpg",
+        trailer: "https://www.youtube.com/watch?v=mU-mEB0glWE",
         featured: true,
-        genre: "Action / Crime",
-        duration: 152
+        genre: "Animation / Action / Fantasy",
+        duration: 135
     }
 ];
 

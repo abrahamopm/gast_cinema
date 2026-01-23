@@ -8,7 +8,17 @@ const showtimeSchema = new mongoose.Schema({
     price: { type: Number, required: true },
     seats: {
         type: Map,
-        of: String, // Key: SeatID (A1), Value: 'available' | 'taken' 
+        of: String, // Key: SeatID (A1), Value: 'available' | 'taken' | 'pending'
+        default: {}
+    },
+    lockedBy: {
+        type: Map,
+        of: String, // Key: SeatID, Value: UserID
+        default: {}
+    },
+    lockExpiry: {
+        type: Map,
+        of: Date, // Key: SeatID, Value: Expiry Date
         default: {}
     }
 });

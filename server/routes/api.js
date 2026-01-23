@@ -18,6 +18,7 @@ router.delete('/movies/:id', verify, movies.deleteMovie);
 
 // Showtimes
 router.get('/movies/:movieId/showtimes', movies.getShowtimes);
+router.get('/showtimes/:id', movies.getShowtimeById);
 router.post('/showtimes', verify, movies.createShowtime);
 router.delete('/showtimes/:id', verify, movies.deleteShowtime);
 
@@ -26,7 +27,10 @@ const adminController = require('../controllers/admin');
 router.get('/admin/stats', verify, adminController.getStats);
 
 // Bookings
+// Bookings
 router.post('/bookings', verify, bookings.createBooking);
+router.post('/bookings/lock', verify, bookings.lockSeats);
+router.post('/bookings/release', verify, bookings.releaseSeats);
 router.get('/bookings', verify, bookings.getUserBookings);
 
 module.exports = router;

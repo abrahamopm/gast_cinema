@@ -13,5 +13,15 @@ exports.getShowtimes = async (req, res) => {
     const showtimes = await Showtime.find({ movie: req.params.movieId }).populate('movie');
     res.json(showtimes);
 };
+
+exports.getShowtimeById = async (req, res) => {
+    try {
+        const showtime = await Showtime.findById(req.params.id).populate('movie');
+        if (!showtime) return res.status(404).json({ error: 'Showtime not found' });
+        res.json(showtime);
+    } catch (err) {
+        res.status(500).json({ error: 'Server Error' });
+    }
+};
 exports.createShowtime = async (req, res) => res.json(await new Showtime(req.body).save());
 exports.deleteShowtime = async (req, res) => res.json(await Showtime.findByIdAndDelete(req.params.id));

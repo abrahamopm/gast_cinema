@@ -45,8 +45,8 @@ const Dashboard = () => {
                                     <span style={{
                                         padding: '5px 12px',
                                         borderRadius: '20px',
-                                        background: booking.status === 'confirmed' ? '#e6f4ea' : '#fff3cd',
-                                        color: booking.status === 'confirmed' ? '#1e7e34' : '#856404',
+                                        background: booking.status === 'paid' ? '#e6f4ea' : booking.status === 'pending' ? '#fff3cd' : '#f8d7da',
+                                        color: booking.status === 'paid' ? '#1e7e34' : booking.status === 'pending' ? '#856404' : '#721c24',
                                         fontSize: '0.8rem',
                                         fontWeight: 'bold',
                                         textTransform: 'uppercase'

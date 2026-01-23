@@ -1,4 +1,7 @@
 import React from 'react';
+import ProtectedRoute from './components/ProtectedRoute';
+import BookingConfirmation from './pages/BookingConfirmation';
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -30,7 +33,22 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/movie/:id" element={<MovieDetails />} />
-                <Route path="/booking/:id" element={<Booking />} />
+                <Route
+                  path="/booking/:id"
+                  element={
+                    <ProtectedRoute>
+                      <Booking />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/booking/confirmation"
+                  element={
+                    <ProtectedRoute>
+                      <BookingConfirmation />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/admin" element={<Admin />} />

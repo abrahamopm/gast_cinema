@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useRef } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
@@ -10,20 +10,21 @@ const Booking = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { showNotification } = useNotification();
+
+    // Data State
     const [showtime, setShowtime] = useState(null);
     const [selectedSeats, setSelectedSeats] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [phone, setPhone] = useState('');
+    const [lockedSeats, setLockedSeats] = useState([]); // Seats currently locked by THIS user
 
-    // Confirmation Modal State
+    // UI State
+    const [loading, setLoading] = useState(true);
+    const [processing, setProcessing] = useState(false);
+    const [phone, setPhone] = useState('');
+    const [phoneError, setPhoneError] = useState('');
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, provider: '' });
 
-    // Logos configuration
-    const providers = [
-        { name: 'Telebirr', color: '#00A4E4', logo: 'https://placehold.co/120x50/00A4E4/ffffff?text=telebirr' },
-        { name: 'CBE Birr', color: '#880088', logo: 'https://placehold.co/120x50/880088/ffffff?text=CBE+Birr' },
-        { name: 'Amole', color: '#003366', logo: 'https://placehold.co/120x50/003366/ffffff?text=Amole' }
-    ];
+    // Ref to handle auto-refresh interval
+    const refreshInterval = useRef(null);
 
     // Grid Configuration
     const rows = 5;
@@ -35,162 +36,263 @@ const Booking = () => {
         }
     }
 
+    const providers = [
+        { name: 'Telebirr', color: '#00A4E4', logo: 'https://placehold.co/120x50/00A4E4/ffffff?text=telebirr' },
+        { name: 'CBE Birr', color: '#880088', logo: 'https://placehold.co/120x50/880088/ffffff?text=CBE+Birr' },
+        { name: 'Amole', color: '#003366', logo: 'https://placehold.co/120x50/003366/ffffff?text=Amole' }
+    ];
+
+    const fetchShowtime = async () => {
+        try {
+            // Using ID directly as per new backend route
+            const res = await api.get(`/showtimes/${id}`);
+            setShowtime(res.data);
+            setLoading(false);
+        } catch (err) {
+            console.error(err);
+            showNotification('Failed to load showtime details', 'error');
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         document.title = "Gast Cinema - Booking";
-        api.get(`/movies/${id}/showtimes`).then(() => {
-            // Mock for now including movie title handling
-            setShowtime({
-                _id: id,
-                price: 150,
-                seats: { 'A1': 'taken', 'B3': 'taken' },
-            });
-        });
+        fetchShowtime();
+
+        // Refresh seat map every 10 seconds to show live updates
+        refreshInterval.current = setInterval(fetchShowtime, 10000);
+
+        return () => {
+            if (refreshInterval.current) clearInterval(refreshInterval.current);
+            // Release locks on unmount if any? (Ideally, yes, but for now relying on TTL)
+            if (lockedSeats.length > 0) {
+                api.post('/bookings/release', { showtimeId: id, seats: lockedSeats }).catch(() => { });
+            }
+        };
     }, [id]);
 
+    const validatePhone = (p) => {
+        // Ethiopian phone validation: Starts with 09, followed by 8 digits
+        const regex = /^09\d{8}$/;
+        return regex.test(p);
+    };
+
+    const handlePhoneChange = (e) => {
+        const val = e.target.value;
+        if (!/^\d*$/.test(val)) return; // Only numbers
+        if (val.length > 10) return;
+        setPhone(val);
+
+        if (val.length === 10 && !validatePhone(val)) {
+            setPhoneError('Invalid format. Must be 09xxxxxxxx');
+        } else {
+            setPhoneError('');
+        }
+    };
+
     const toggleSeat = (seat) => {
-        if (showtime.seats[seat] === 'taken') return;
+        if (!showtime) return;
+
+        const status = showtime.seats[seat];
+        // Cannot toggle if taken or pending (by others)
+        // Note: Our showtime.seats map might not have keys for available seats if using default, so check existance
+        if (status === 'taken') return;
+        if (status === 'pending' && !lockedSeats.includes(seat)) return; // Pending by others
+
         if (selectedSeats.includes(seat)) {
             setSelectedSeats(selectedSeats.filter(s => s !== seat));
         } else {
+            if (selectedSeats.length >= 6) return showNotification("Max 6 seats per booking", "info");
             setSelectedSeats([...selectedSeats, seat]);
         }
     };
 
-    const initiatePayment = (providerName) => {
-        if (!user) return showNotification('Please Login first', 'error');
+    const initiateBooking = async (providerName) => {
+        if (!user) return navigate('/login');
         if (selectedSeats.length === 0) return showNotification('Select at least one seat', 'error');
-        if (!phone) return showNotification('Please enter your phone number', 'error');
+        if (!validatePhone(phone)) return setPhoneError('Please enter a valid phone number (09xxxxxxxx)');
 
-        setConfirmModal({ isOpen: true, provider: providerName });
-    }
+        setProcessing(true);
+        // 1. Lock seats
+        try {
+            await api.post('/bookings/lock', { showtimeId: id, seats: selectedSeats });
+            setLockedSeats(selectedSeats); // Track locally
+            setProcessing(false);
+            setConfirmModal({ isOpen: true, provider: providerName });
+        } catch (err) {
+            setProcessing(false);
+            showNotification(err.response?.data?.error || 'Seats no longer available', 'error');
+            // Refresh to show which are taken
+            fetchShowtime();
+            // Remove taken ones from selection
+            if (err.response?.data?.seats) {
+                setSelectedSeats(selectedSeats.filter(s => !err.response.data.seats.includes(s)));
+            }
+        }
+    };
 
     const processPayment = async () => {
-        setLoading(true);
-        // Simulate API delay
+        setProcessing(true);
+        // Simulate API delay, normally this would be a redirect or wait for webhook
         await new Promise(r => setTimeout(r, 2000));
 
         try {
-            await api.post('/bookings', {
+            const idempotencyKey = `booking-${id}-${user._id}-${Date.now()}`;
+            const res = await api.post('/bookings', {
                 showtimeId: id,
                 seats: selectedSeats,
                 paymentProvider: confirmModal.provider,
-                phone: phone
+                phone: phone,
+                idempotencyKey
             });
-            showNotification(`Payment Successful via ${confirmModal.provider}!`, 'success');
-            navigate('/dashboard');
+
+            if (res.data.error) throw new Error(res.data.error);
+
+            setLockedSeats([]); // Clear locks as they are now booked/paid
+            navigate('/booking/confirmation', { state: { booking: res.data } });
         } catch (err) {
-            showNotification('Payment Failed', 'error');
+            console.error(err);
+            showNotification(err.response?.data?.error || 'Booking Failed', 'error');
+            // Unlock/Release if failed
+            api.post('/bookings/release', { showtimeId: id, seats: selectedSeats });
+            fetchShowtime();
         } finally {
-            setLoading(false);
+            setProcessing(false);
             setConfirmModal({ isOpen: false, provider: '' });
         }
     };
 
-    if (!showtime) return <div className="container" style={{ padding: '40px' }}>Loading Showtime...</div>;
+    if (loading) {
+        return (
+            <div className="container" style={{ padding: '40px', textAlign: 'center' }}>
+                <div className="skeleton" style={{ width: '200px', height: '30px', margin: '0 auto 20px', background: '#ddd', borderRadius: '4px' }}></div>
+                <div className="skeleton" style={{ width: '80%', height: '400px', margin: '0 auto', background: '#f0f0f0', borderRadius: '15px' }}></div>
+            </div>
+        );
+    }
+
+    if (!showtime) return <div className="container">Showtime not found.</div>;
+
+    const movie = showtime.movie;
+    const totalPrice = selectedSeats.length * showtime.price;
 
     return (
-        <div className="container" style={{ paddingBottom: '140px', paddingTop: '100px' }}>
+        <div className="container" style={{ paddingBottom: '160px', paddingTop: '40px' }}>
 
-            {/* Confirmation Modal */}
             <Modal
                 isOpen={confirmModal.isOpen}
-                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onClose={() => {
+                    setConfirmModal({ ...confirmModal, isOpen: false });
+                    // Optionally release seats if they strictly close modal knowing they won't pay
+                }}
                 onConfirm={processPayment}
-                title="Confirm Your Booking"
+                title="Confirm Payment"
                 message={`
-             Movie Ticket for ${selectedSeats.length} person(s).
-             Seats: ${selectedSeats.join(', ')}
-             Total Price: ${selectedSeats.length * showtime.price} ETB
-             Phone: ${phone}
-             Payment Method: ${confirmModal.provider}
-             
-             Proceed to payment?
-          `}
+                    Movie: ${movie ? movie.title : 'Ticket'}
+                    Seats: ${selectedSeats.join(', ')}
+                    Price: ${totalPrice} ETB
+                    Phone: ${phone}
+                    Provider: ${confirmModal.provider}
+                `}
             />
 
-            <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Select Your Seats</h2>
-            <p style={{ textAlign: 'center', marginBottom: '40px', color: '#666' }}>Tap on seats to select or deselect.</p>
+            {/* Breadcrumb & Header */}
+            <div style={{ marginBottom: '30px' }}>
+                <Link to={`/movie/${movie?._id}`} style={{ color: '#666', textDecoration: 'none', display: 'inline-block', marginBottom: '10px' }}>← Back to Movie</Link>
+                <h2 style={{ margin: '0 0 10px' }}>{movie ? movie.title : 'Loading...'}</h2>
+                <div style={{ display: 'flex', gap: '20px', color: '#888', fontSize: '0.9rem' }}>
+                    <span>📅 {showtime.date}</span>
+                    <span>⏰ {showtime.time}</span>
+                    <span>📍 {showtime.hall}</span>
+                </div>
+            </div>
 
             {/* Screen Visual */}
             <div style={{
-                height: '60px',
-                width: '80%',
-                margin: '0 auto 50px',
-                borderTop: '5px solid #D4AF37',
-                borderRadius: '50% 50% 0 0 / 20px 20px 0 0',
-                boxShadow: '0 -20px 30px rgba(212, 175, 55, 0.2)',
+                height: '40px',
+                width: '60%',
+                margin: '0 auto 40px',
+                borderTop: '4px solid #D4AF37',
+                borderRadius: '50% 50% 0 0',
+                boxShadow: '0 -15px 20px rgba(212, 175, 55, 0.1)',
                 position: 'relative'
             }}>
-                <span style={{ position: 'absolute', width: '100%', textAlign: 'center', top: '20px', color: '#ccc', fontSize: '0.8rem', letterSpacing: '4px' }}>SCREEN</span>
+                <span style={{ position: 'absolute', width: '100%', textAlign: 'center', top: '10px', color: '#ccc', fontSize: '0.7rem', letterSpacing: '4px' }}>SCREEN</span>
             </div>
 
+            {/* Seat Grid */}
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                gap: '15px',
-                marginBottom: '60px',
-                maxWidth: '450px',
-                margin: '0 auto 60px'
+                gap: '12px',
+                maxWidth: '400px',
+                margin: '0 auto 50px'
             }}>
                 {seatsArray.map(seat => {
-                    const isTaken = showtime.seats[seat] === 'taken';
-                    const isSelected = selectedSeats.includes(seat);
-                    let bg = '#fff';
-                    let color = '#000';
-                    let border = '1px solid #ddd';
+                    const status = showtime.seats[seat] || 'available';
+                    // Check if pending by SOMEONE ELSE
+                    // If locked by me locally, treat as selected/pending-by-me
+                    // If status is pending in DB but not in my lockedSeats, it's someone else
 
-                    if (isTaken) { bg = '#eee'; color = '#ccc'; border = 'none'; }
-                    if (isSelected) { bg = '#D4AF37'; color = '#fff'; border = 'none'; }
+                    // Actually, let's simplify: 
+                    // status='taken' -> Taken
+                    // status='pending' -> Pending (warn)
+
+                    let isTaken = status === 'taken';
+                    let isPending = status === 'pending';
+
+                    // If I have it selected, override pending visual for me (make it selected)
+                    const isSelected = selectedSeats.includes(seat);
+
+                    let bg = '#fff';
+                    let color = '#333';
+                    let border = '1px solid #ddd';
+                    let cursor = 'pointer';
+
+                    if (isTaken) {
+                        bg = '#eee'; color = '#ccc'; border = '1px solid #eee'; cursor = 'not-allowed';
+                    } else if (isPending && !isSelected) {
+                        // Pending by someone else
+                        bg = '#fff3cd'; color = '#856404'; border = '1px solid #ffeeba'; cursor = 'not-allowed';
+                    } else if (isSelected) {
+                        bg = '#D4AF37'; color = '#fff'; border = '1px solid #D4AF37';
+                    }
 
                     return (
-                        <div key={seat} style={{ position: 'relative' }} className="seat-wrapper">
-                            <button
-                                onClick={() => toggleSeat(seat)}
-                                disabled={isTaken}
-                                className="seat-btn"
-                                style={{
-                                    background: bg,
-                                    color: color,
-                                    border: border,
-                                    borderRadius: '8px',
-                                    cursor: isTaken ? 'not-allowed' : 'pointer',
-                                    width: '100%',
-                                    aspectRatio: '1/1',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontWeight: 'bold',
-                                    boxShadow: isSelected ? '0 5px 15px rgba(212, 175, 55, 0.4)' : 'none',
-                                    transform: isSelected ? 'scale(1.1)' : 'scale(1)'
-                                }}
-                            >
-                                {seat.replace(/[A-Z]/, '')}
-                            </button>
-                            <div className="tooltip">
-                                Row {seat.charAt(0)}
-                            </div>
-                        </div>
+                        <button
+                            key={seat}
+                            onClick={() => toggleSeat(seat)}
+                            disabled={isTaken || (isPending && !isSelected) || processing}
+                            aria-label={`Seat ${seat}, ${isTaken ? 'Taken' : isSelected ? 'Selected' : 'Available'}`}
+                            className="seat-btn"
+                            style={{
+                                background: bg,
+                                color: color,
+                                border: border,
+                                borderRadius: '8px',
+                                aspectRatio: '1/1',
+                                cursor: cursor,
+                                fontSize: '0.9rem',
+                                opacity: processing ? 0.7 : 1,
+                                transition: 'transform 0.1s'
+                            }}
+                            title={`Seat ${seat}`}
+                        >
+                            {seat.replace(/[A-Z]/, '')}
+                        </button>
                     );
                 })}
             </div>
 
             {/* Legend */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', marginBottom: '40px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '20px', height: '20px', border: '1px solid #ddd', borderRadius: '4px', background: '#fff' }}></div>
-                    <span style={{ fontSize: '0.9rem', color: '#666' }}>Available</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '20px', height: '20px', background: '#D4AF37', borderRadius: '4px' }}></div>
-                    <span style={{ fontSize: '0.9rem', color: '#666' }}>Selected</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '20px', height: '20px', background: '#eee', borderRadius: '4px' }}></div>
-                    <span style={{ fontSize: '0.9rem', color: '#666' }}>Taken</span>
-                </div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '40px', flexWrap: 'wrap' }}>
+                <LegendItem color="#fff" border="#ddd" label="Available" />
+                <LegendItem color="#D4AF37" label="Selected" />
+                <LegendItem color="#eee" label="Taken" />
+                <LegendItem color="#fff3cd" border="#ffeeba" label="Pending" />
             </div>
 
-            {/* Sticky Summary */}
+            {/* Mobile/Sticky Summary */}
             <div style={{
                 position: 'fixed',
                 bottom: 0,
@@ -198,53 +300,60 @@ const Booking = () => {
                 width: '100%',
                 background: '#fff',
                 borderTop: '1px solid #eee',
-                padding: '20px 0',
+                padding: '20px',
                 zIndex: 100,
-                boxShadow: '0 -10px 40px rgba(0,0,0,0.1)'
+                boxShadow: '0 -5px 20px rgba(0,0,0,0.05)'
             }}>
-                <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-                    <div style={{ flex: 1, minWidth: '250px' }}>
-                        <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '5px', color: '#666' }}>Your Phone Number (For Tickets)</label>
-                        <input
-                            type="tel"
-                            placeholder="e.g 0911223344"
-                            value={phone}
-                            onChange={e => setPhone(e.target.value)}
-                            style={{
-                                width: '100%', padding: '12px 15px',
-                                border: '1px solid #ddd', borderRadius: '8px',
-                                fontSize: '1rem', outline: 'none',
-                                background: '#f9f9f9'
-                            }}
-                        />
-                    </div>
+                <div className="container">
+                    <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-                    <div style={{ display: 'flex', gap: '30px', alignItems: 'center', flexWrap: 'wrap' }}>
-                        <div style={{ textAlign: 'right', minWidth: '100px' }}>
-                            <span style={{ display: 'block', fontSize: '0.8rem', color: '#888' }}>TOTAL PRICE</span>
-                            <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#000' }}>{selectedSeats.length * showtime.price} <span style={{ fontSize: '1rem', color: '#888' }}>ETB</span></span>
+                        {/* Input Row */}
+                        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                            <div style={{ flex: 1, minWidth: '200px' }}>
+                                <label style={{ fontSize: '0.8rem', color: '#666', marginBottom: '5px', display: 'block' }}>Phone Number (Required)</label>
+                                <input
+                                    type="tel"
+                                    value={phone}
+                                    onChange={handlePhoneChange}
+                                    placeholder="09xxxxxxxx"
+                                    style={{
+                                        width: '100%', padding: '10px 15px', borderRadius: '8px',
+                                        border: phoneError ? '1px solid red' : '1px solid #ddd',
+                                        outline: 'none', background: '#f9f9f9', fontSize: '1rem'
+                                    }}
+                                />
+                                {phoneError && <span style={{ color: 'red', fontSize: '0.75rem', marginTop: '5px', display: 'block' }}>{phoneError}</span>}
+                            </div>
+
+                            <div style={{ textAlign: 'right', minWidth: '120px' }}>
+                                <span style={{ display: 'block', fontSize: '0.8rem', color: '#888' }}>TOTAL ({selectedSeats.length})</span>
+                                <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: 'bold' }}>{totalPrice} ETB</span>
+                            </div>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '15px' }}>
+                        {/* Payment Buttons */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '10px' }}>
                             {providers.map(p => (
                                 <button
                                     key={p.name}
-                                    onClick={() => initiatePayment(p.name)}
-                                    className="btn"
-                                    disabled={loading || selectedSeats.length === 0}
+                                    onClick={() => initiateBooking(p.name)}
+                                    disabled={selectedSeats.length === 0 || !!phoneError || !phone || processing}
                                     style={{
-                                        padding: '0',
+                                        padding: '12px',
+                                        background: p.color,
+                                        color: '#fff',
                                         border: 'none',
-                                        opacity: selectedSeats.length === 0 ? 0.4 : 1,
-                                        transition: 'all 0.3s',
-                                        overflow: 'hidden',
                                         borderRadius: '8px',
-                                        boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+                                        cursor: (selectedSeats.length === 0 || !!phoneError || !phone || processing) ? 'not-allowed' : 'pointer',
+                                        opacity: (selectedSeats.length === 0 || !!phoneError || !phone || processing) ? 0.5 : 1,
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
                                         height: '50px'
                                     }}
-                                    title={`Pay with ${p.name}`}
                                 >
-                                    <img src={p.logo} alt={p.name} style={{ height: '100%', display: 'block' }} />
+                                    {processing ? 'Processing...' : `Pay ${p.name}`}
                                 </button>
                             ))}
                         </div>
@@ -252,40 +361,15 @@ const Booking = () => {
                 </div>
             </div>
 
-            <style>{`
-        .seat-wrapper:hover .tooltip {
-          opacity: 1;
-          transform: translateX(-50%) translateY(-10px);
-        }
-        .tooltip {
-          pointer-events: none;
-          position: absolute;
-          bottom: 100%;
-          left: 50%;
-          transform: translateX(-50%) translateY(0);
-          background: #333;
-          color: #fff;
-          padding: 6px 10px;
-          border-radius: 4px;
-          font-size: 0.75rem;
-          white-space: nowrap;
-          opacity: 0;
-          transition: all 0.2s ease;
-          z-index: 10;
-        }
-        .tooltip::after {
-            content: '';
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: #333 transparent transparent transparent;
-        }
-      `}</style>
         </div>
     );
 };
+
+const LegendItem = ({ color, border, label }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ width: '15px', height: '15px', background: color, border: border || 'none', borderRadius: '4px' }}></div>
+        <span style={{ fontSize: '0.8rem', color: '#666' }}>{label}</span>
+    </div>
+);
 
 export default Booking;
