@@ -18,7 +18,7 @@ export const NotificationProvider = ({ children }) => {
             {notification && (
                 <div style={{
                     position: 'fixed',
-                    top: '20px',
+                    bottom: '40px',
                     right: '20px',
                     padding: '15px 25px',
                     background: notification.type === 'error' ? '#ff4d4d' : '#D4AF37',

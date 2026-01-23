@@ -62,6 +62,9 @@ exports.releaseSeats = async (req, res) => {
 };
 
 exports.createBooking = async (req, res) => {
+    if (req.user.role === 'admin') {
+        return res.status(403).json({ error: 'Admins cannot book tickets.' });
+    }
     const { showtimeId, seats, paymentProvider, phone, idempotencyKey } = req.body;
     const userId = req.user.id;
 

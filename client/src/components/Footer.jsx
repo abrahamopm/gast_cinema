@@ -1,7 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+import { useAuth } from '../context/AuthContext';
+
 const Footer = () => {
+    const { user } = useAuth();
+
     return (
         <footer style={{
             background: '#000',
@@ -19,8 +23,12 @@ const Footer = () => {
                     <h4 style={{ color: '#D4AF37', marginBottom: '20px' }}>Quick Links</h4>
                     <ul style={{ listStyle: 'none', color: '#888', padding: 0 }}>
                         <li style={{ marginBottom: '10px' }}><Link to="/" className="footer-link">Home</Link></li>
-                        <li style={{ marginBottom: '10px' }}><Link to="/dashboard" className="footer-link">My Tickets</Link></li>
-                        <li style={{ marginBottom: '10px' }}><Link to="/login" className="footer-link">Login</Link></li>
+                        {user && user.role === 'admin' ? (
+                            <li style={{ marginBottom: '10px' }}><Link to="/admin" className="footer-link">Admin Portal</Link></li>
+                        ) : (
+                            <li style={{ marginBottom: '10px' }}><Link to="/dashboard" className="footer-link">My Tickets</Link></li>
+                        )}
+                        {!user && <li style={{ marginBottom: '10px' }}><Link to="/login" className="footer-link">Login</Link></li>}
                     </ul>
                 </div>
 

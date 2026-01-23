@@ -67,15 +67,17 @@ const Admin = () => {
     const handleMovieSubmit = async (e) => {
         e.preventDefault();
         try {
+            let res;
             if (editingId) {
-                await api.put(`/movies/${editingId}`, movieForm);
+                res = await api.put(`/movies/${editingId}`, movieForm);
                 showNotification('Movie Updated Successfully', 'success');
             } else {
-                await api.post('/movies', movieForm);
+                res = await api.post('/movies', movieForm);
                 showNotification('Movie Added Successfully', 'success');
             }
+            await fetchBaseData();
             resetForms();
-            fetchBaseData();
+            setSelectedMovieId(res.data._id); // Auto-select for showtime addition
         } catch (err) {
             showNotification('Operation Failed', 'error');
         }

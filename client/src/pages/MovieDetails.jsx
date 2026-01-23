@@ -13,6 +13,10 @@ const MovieDetails = () => {
     const { showNotification } = useNotification();
 
     const handleBook = (st) => {
+        if (user && user.role === 'admin') {
+            showNotification('Admins cannot book tickets due to conflict of interest.', 'error');
+            return;
+        }
         if (!user) {
             showNotification('Please log in or create an account to book tickets.', 'info');
             navigate('/login', { state: { from: `/booking/${st._id}` } });
@@ -46,7 +50,7 @@ const MovieDetails = () => {
                 </div>
 
                 <div style={{ flex: '1', color: '#fff' }}>
-                    <h1 style={{ fontSize: '3.5rem', marginBottom: '10px', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{movie.title}</h1>
+                    <h1 style={{ fontSize: '3.5rem', marginBottom: '10px', textShadow: '0 2px 10px rgba(0,0,0,0.5)', color: '#fff' }}>{movie.title}</h1>
                     <div style={{ display: 'flex', gap: '20px', marginBottom: '30px', fontSize: '1.1rem', color: '#ccc' }}>
                         {movie.genre && <span>{movie.genre}</span>}
                         {movie.duration && <span>• {Math.floor(movie.duration / 60)}h {movie.duration % 60}m</span>}
