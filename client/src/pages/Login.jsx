@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
@@ -17,12 +17,15 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log("Attempting login with:", email);
         try {
             const res = await api.post('/auth/login', { email, password });
+            console.log("Login success:", res.data);
             login(res.data);
             showNotification('Welcome back!', 'success');
             navigate('/');
         } catch (err) {
+            console.error("Login error:", err);
             showNotification('Login Failed: ' + (err.response?.data?.error || err.message), 'error');
         }
     };

@@ -95,7 +95,7 @@ const Sidebar = ({ isOpen, onClose, user, onLogout }) => {
 
                 {/* Footer */}
                 <div style={{ padding: '30px', background: '#f9f9f9', fontSize: '0.8rem', color: '#888', textAlign: 'center' }}>
-                    &copy; 2024 Gast Cinema
+                    &copy; 2026 Gast Cinema
                 </div>
             </div>
 
