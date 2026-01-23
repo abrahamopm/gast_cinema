@@ -5,7 +5,9 @@ const movieSchema = new mongoose.Schema({
     description: String,
     poster: String, // URL
     trailer: String, // URL
-    featured: { type: Boolean, default: false }
+    featured: { type: Boolean, default: false },
+    genre: String,
+    duration: Number // in minutes
 });
 
 module.exports = mongoose.model('Movie', movieSchema);

@@ -89,7 +89,7 @@ const Booking = () => {
     if (!showtime) return <div className="container" style={{ padding: '40px' }}>Loading Showtime...</div>;
 
     return (
-        <div className="container" style={{ paddingBottom: '120px' }}>
+        <div className="container" style={{ paddingBottom: '140px', paddingTop: '100px' }}>
 
             {/* Confirmation Modal */}
             <Modal
@@ -108,34 +108,39 @@ const Booking = () => {
           `}
             />
 
-            <h2 style={{ textAlign: 'center', margin: '40px 0' }}>Select Your Seats</h2>
+            <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Select Your Seats</h2>
+            <p style={{ textAlign: 'center', marginBottom: '40px', color: '#666' }}>Tap on seats to select or deselect.</p>
 
             {/* Screen Visual */}
             <div style={{
-                height: '8px',
-                background: '#ddd',
+                height: '60px',
                 width: '80%',
-                margin: '0 auto 40px',
-                borderRadius: '50%',
-                boxShadow: '0 10px 20px -5px rgba(0,0,0,0.2)'
-            }}></div>
-            <p style={{ textAlign: 'center', fontSize: '0.8rem', color: '#888', marginBottom: '30px' }}>SCREEN</p>
+                margin: '0 auto 50px',
+                borderTop: '5px solid #D4AF37',
+                borderRadius: '50% 50% 0 0 / 20px 20px 0 0',
+                boxShadow: '0 -20px 30px rgba(212, 175, 55, 0.2)',
+                position: 'relative'
+            }}>
+                <span style={{ position: 'absolute', width: '100%', textAlign: 'center', top: '20px', color: '#ccc', fontSize: '0.8rem', letterSpacing: '4px' }}>SCREEN</span>
+            </div>
 
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                gap: '12px',
-                marginBottom: '40px',
-                maxWidth: '400px',
-                margin: '0 auto 40px'
+                gap: '15px',
+                marginBottom: '60px',
+                maxWidth: '450px',
+                margin: '0 auto 60px'
             }}>
                 {seatsArray.map(seat => {
                     const isTaken = showtime.seats[seat] === 'taken';
                     const isSelected = selectedSeats.includes(seat);
                     let bg = '#fff';
                     let color = '#000';
-                    if (isTaken) { bg = '#1a1a1a'; color = '#444'; }
-                    if (isSelected) { bg = '#D4AF37'; color = '#000'; }
+                    let border = '1px solid #ddd';
+
+                    if (isTaken) { bg = '#eee'; color = '#ccc'; border = 'none'; }
+                    if (isSelected) { bg = '#D4AF37'; color = '#fff'; border = 'none'; }
 
                     return (
                         <div key={seat} style={{ position: 'relative' }} className="seat-wrapper">
@@ -146,8 +151,8 @@ const Booking = () => {
                                 style={{
                                     background: bg,
                                     color: color,
-                                    border: isTaken ? 'none' : '1px solid #000',
-                                    borderRadius: '6px',
+                                    border: border,
+                                    borderRadius: '8px',
                                     cursor: isTaken ? 'not-allowed' : 'pointer',
                                     width: '100%',
                                     aspectRatio: '1/1',
@@ -155,14 +160,14 @@ const Booking = () => {
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     fontWeight: 'bold',
-                                    boxShadow: isSelected ? '0 0 15px rgba(212, 175, 55, 0.5)' : 'none'
+                                    boxShadow: isSelected ? '0 5px 15px rgba(212, 175, 55, 0.4)' : 'none',
+                                    transform: isSelected ? 'scale(1.1)' : 'scale(1)'
                                 }}
                             >
-                                {seat}
+                                {seat.replace(/[A-Z]/, '')}
                             </button>
-
                             <div className="tooltip">
-                                {isTaken ? 'Has Taken' : `Row ${seat.charAt(0)} - Seat ${seat.slice(1)}`}
+                                Row {seat.charAt(0)}
                             </div>
                         </div>
                     );
@@ -170,18 +175,18 @@ const Booking = () => {
             </div>
 
             {/* Legend */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '40px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', marginBottom: '40px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '15px', height: '15px', border: '1px solid #000', borderRadius: '3px' }}></div>
-                    <span style={{ fontSize: '0.8rem' }}>Available</span>
+                    <div style={{ width: '20px', height: '20px', border: '1px solid #ddd', borderRadius: '4px', background: '#fff' }}></div>
+                    <span style={{ fontSize: '0.9rem', color: '#666' }}>Available</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '15px', height: '15px', background: '#D4AF37', borderRadius: '3px' }}></div>
-                    <span style={{ fontSize: '0.8rem' }}>Selected</span>
+                    <div style={{ width: '20px', height: '20px', background: '#D4AF37', borderRadius: '4px' }}></div>
+                    <span style={{ fontSize: '0.9rem', color: '#666' }}>Selected</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '15px', height: '15px', background: '#1a1a1a', borderRadius: '3px' }}></div>
-                    <span style={{ fontSize: '0.8rem' }}>Taken</span>
+                    <div style={{ width: '20px', height: '20px', background: '#eee', borderRadius: '4px' }}></div>
+                    <span style={{ fontSize: '0.9rem', color: '#666' }}>Taken</span>
                 </div>
             </div>
 
@@ -191,35 +196,36 @@ const Booking = () => {
                 bottom: 0,
                 left: 0,
                 width: '100%',
-                background: 'rgba(255,255,255,0.95)',
-                backdropFilter: 'blur(10px)',
+                background: '#fff',
                 borderTop: '1px solid #eee',
                 padding: '20px 0',
                 zIndex: 100,
-                boxShadow: '0 -4px 20px rgba(0,0,0,0.05)'
+                boxShadow: '0 -10px 40px rgba(0,0,0,0.1)'
             }}>
                 <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-                    <div style={{ flex: 1, minWidth: '200px' }}>
+                    <div style={{ flex: 1, minWidth: '250px' }}>
+                        <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '5px', color: '#666' }}>Your Phone Number (For Tickets)</label>
                         <input
                             type="tel"
-                            placeholder="Enter Phone (Required)"
+                            placeholder="e.g 0911223344"
                             value={phone}
                             onChange={e => setPhone(e.target.value)}
                             style={{
-                                width: '100%', padding: '10px',
-                                border: '1px solid #ddd', borderRadius: '4px',
-                                fontSize: '0.9rem'
+                                width: '100%', padding: '12px 15px',
+                                border: '1px solid #ddd', borderRadius: '8px',
+                                fontSize: '1rem', outline: 'none',
+                                background: '#f9f9f9'
                             }}
                         />
                     </div>
 
-                    <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                        <div style={{ textAlign: 'right' }}>
-                            <span style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>TOTAL</span>
-                            <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{selectedSeats.length * showtime.price} ETB</span>
+                    <div style={{ display: 'flex', gap: '30px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div style={{ textAlign: 'right', minWidth: '100px' }}>
+                            <span style={{ display: 'block', fontSize: '0.8rem', color: '#888' }}>TOTAL PRICE</span>
+                            <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#000' }}>{selectedSeats.length * showtime.price} <span style={{ fontSize: '1rem', color: '#888' }}>ETB</span></span>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '10px' }}>
+                        <div style={{ display: 'flex', gap: '15px' }}>
                             {providers.map(p => (
                                 <button
                                     key={p.name}
@@ -227,16 +233,18 @@ const Booking = () => {
                                     className="btn"
                                     disabled={loading || selectedSeats.length === 0}
                                     style={{
-                                        padding: 0,
+                                        padding: '0',
                                         border: 'none',
-                                        opacity: selectedSeats.length === 0 ? 0.5 : 1,
-                                        transition: 'transform 0.2s',
+                                        opacity: selectedSeats.length === 0 ? 0.4 : 1,
+                                        transition: 'all 0.3s',
                                         overflow: 'hidden',
-                                        borderRadius: '4px'
+                                        borderRadius: '8px',
+                                        boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+                                        height: '50px'
                                     }}
                                     title={`Pay with ${p.name}`}
                                 >
-                                    <img src={p.logo} alt={p.name} style={{ height: '50px', display: 'block' }} />
+                                    <img src={p.logo} alt={p.name} style={{ height: '100%', display: 'block' }} />
                                 </button>
                             ))}
                         </div>
@@ -247,7 +255,7 @@ const Booking = () => {
             <style>{`
         .seat-wrapper:hover .tooltip {
           opacity: 1;
-          transform: translateX(-50%) translateY(-5px);
+          transform: translateX(-50%) translateY(-10px);
         }
         .tooltip {
           pointer-events: none;
@@ -255,18 +263,25 @@ const Booking = () => {
           bottom: 100%;
           left: 50%;
           transform: translateX(-50%) translateY(0);
-          background: #000;
+          background: #333;
           color: #fff;
-          padding: 5px 10px;
+          padding: 6px 10px;
           border-radius: 4px;
-          font-size: 0.7rem;
+          font-size: 0.75rem;
           white-space: nowrap;
           opacity: 0;
           transition: all 0.2s ease;
           z-index: 10;
         }
-        .btn:hover img {
-           transform: scale(1.05);
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
         }
       `}</style>
         </div>
