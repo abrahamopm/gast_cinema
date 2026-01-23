@@ -19,6 +19,7 @@ router.delete('/movies/:id', verify, movies.deleteMovie);
 // Showtimes
 router.get('/movies/:movieId/showtimes', movies.getShowtimes);
 router.post('/showtimes', verify, movies.createShowtime);
+router.delete('/showtimes/:id', verify, movies.deleteShowtime);
 
 // Admin
 const adminController = require('../controllers/admin');

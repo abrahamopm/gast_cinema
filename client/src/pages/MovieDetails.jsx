@@ -57,23 +57,32 @@ const MovieDetails = () => {
                     <h3 style={{ marginBottom: '20px', color: '#D4AF37', borderBottom: '1px solid rgba(212, 175, 55, 0.3)', paddingBottom: '10px', display: 'inline-block' }}>Select Showtime</h3>
 
                     <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-                        {showtimes.length > 0 ? showtimes.map(st => (
-                            <button key={st._id} onClick={() => handleBook(st)} className="btn" style={{
-                                fontWeight: 'bold',
-                                background: 'rgba(255,255,255,0.1)',
-                                color: '#fff',
-                                border: '1px solid rgba(255,255,255,0.2)',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                padding: '10px 20px',
-                                textDecoration: 'none',
-                                cursor: 'pointer'
-                            }}>
-                                <span style={{ fontSize: '1.2rem', marginBottom: '5px' }}>{st.time}</span>
-                                <span style={{ fontSize: '0.8rem', color: '#D4AF37' }}>{st.date}</span>
-                            </button>
-                        )) : <p>No showtimes available.</p>}
+                        {showtimes.length > 0 ? showtimes.map(st => {
+                            let borderColor = 'rgba(255,255,255,0.2)';
+                            let textColor = '#D4AF37';
+                            if (st.price >= 300) { borderColor = '#D4AF37'; textColor = '#FFD700'; } // Gold/Premium
+
+                            return (
+                                <button key={st._id} onClick={() => handleBook(st)} className="btn" style={{
+                                    fontWeight: 'bold',
+                                    background: 'rgba(0,0,0,0.5)',
+                                    color: '#fff',
+                                    border: `1px solid ${borderColor}`,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    padding: '15px 25px',
+                                    textDecoration: 'none',
+                                    cursor: 'pointer',
+                                    minWidth: '120px'
+                                }}>
+                                    <span style={{ fontSize: '1.4rem', marginBottom: '5px' }}>{st.time}</span>
+                                    <span style={{ fontSize: '0.8rem', color: '#ccc', marginBottom: '5px' }}>{st.date}</span>
+                                    <span style={{ fontSize: '0.8rem', color: textColor, textTransform: 'uppercase', letterSpacing: '1px' }}>{st.hall || 'Standard'}</span>
+                                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', marginTop: '5px' }}>{st.price} ETB</span>
+                                </button>
+                            );
+                        }) : <p>No showtimes available.</p>}
                     </div>
                 </div>
             </div>

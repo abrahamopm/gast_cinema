@@ -109,6 +109,56 @@ const Home = () => {
                 </div>
             </section>
 
+            {/* Our Halls Section */}
+            <section style={{ padding: '100px 20px', background: '#fff' }}>
+                <div className="container">
+                    <h2 style={{ textAlign: 'center', marginBottom: '60px', fontSize: '2.5rem' }}>Our <span style={{ color: '#D4AF37' }}>Halls</span></h2>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
+                        {/* Hall 1 */}
+                        <div style={{ position: 'relative', height: '400px', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+                            <img src="https://images.unsplash.com/photo-1517604931442-71053e3e2e3c?q=80&w=2070&auto=format&fit=crop" alt="The Grand Gast" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s' }} className="hall-img" />
+                            <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', padding: '30px', background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)', color: '#fff' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end' }}>
+                                    <h3 style={{ color: '#D4AF37', marginBottom: '10px' }}>The Grand Gast</h3>
+                                    <span style={{ background: '#D4AF37', color: '#000', padding: '5px 10px', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '10px' }}>150 ETB</span>
+                                </div>
+                                <p style={{ fontSize: '0.9rem', opacity: 0.9 }}>Our flagship auditorium featuring massive 4K screens and Dolby Atmos sound for the ultimate blockbuster experience.</p>
+                            </div>
+                        </div>
+
+                        {/* Hall 2 */}
+                        <div style={{ position: 'relative', height: '400px', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+                            <img src="https://images.unsplash.com/photo-1543599538-a6c4f6cc5c05?q=80&w=1887&auto=format&fit=crop" alt="Gold Lounge" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s' }} className="hall-img" />
+                            <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', padding: '30px', background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)', color: '#fff' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end' }}>
+                                    <h3 style={{ color: '#D4AF37', marginBottom: '10px' }}>Gold Lounge</h3>
+                                    <span style={{ background: '#D4AF37', color: '#000', padding: '5px 10px', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '10px' }}>300 ETB</span>
+                                </div>
+                                <p style={{ fontSize: '0.9rem', opacity: 0.9 }}>An intimate setting with fully reclining leather seats, waiter service, and exclusive menu options.</p>
+                            </div>
+                        </div>
+
+                        {/* Hall 3 */}
+                        <div style={{ position: 'relative', height: '400px', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+                            <img src="https://plus.unsplash.com/premium_photo-1661306437817-8ab34be91e74?q=80&w=2070&auto=format&fit=crop" alt="Director's Cut" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s' }} className="hall-img" />
+                            <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', padding: '30px', background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)', color: '#fff' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end' }}>
+                                    <h3 style={{ color: '#D4AF37', marginBottom: '10px' }}>Director's Cut</h3>
+                                    <span style={{ background: '#D4AF37', color: '#000', padding: '5px 10px', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '10px' }}>450 ETB</span>
+                                </div>
+                                <p style={{ fontSize: '0.9rem', opacity: 0.9 }}>A private screening room designed for cinephiles, featuring curated classics and indie gems.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <style>{`
+                    .hall-img:hover {
+                        transform: scale(1.05);
+                    }
+                `}</style>
+            </section>
+
             <section style={{ padding: '120px 20px', background: '#000', color: '#fff', textAlign: 'center' }}>
                 <div className="container" style={{ maxWidth: '700px' }}>
                     <h2 style={{ marginBottom: '20px', color: '#D4AF37' }}>Never Miss a Premiere</h2>

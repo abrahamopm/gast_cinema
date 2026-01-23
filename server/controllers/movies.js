@@ -14,3 +14,4 @@ exports.getShowtimes = async (req, res) => {
     res.json(showtimes);
 };
 exports.createShowtime = async (req, res) => res.json(await new Showtime(req.body).save());
+exports.deleteShowtime = async (req, res) => res.json(await Showtime.findByIdAndDelete(req.params.id));
