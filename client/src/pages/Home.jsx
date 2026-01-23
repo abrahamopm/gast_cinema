@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import { FaCoffee, FaChair, FaFilm } from 'react-icons/fa';
 
 const Home = () => {
     const [movies, setMovies] = useState([]);
@@ -81,6 +82,44 @@ const Home = () => {
                     )}
                 </div>
             </div>
+
+            <section style={{ backgroundColor: '#f9f9f9', padding: '100px 20px', textAlign: 'center', marginTop: '60px' }}>
+                <div className="container">
+                    <h2 style={{ marginBottom: '60px', fontSize: '2.5rem' }}>The <span style={{ color: '#D4AF37' }}>Gast</span> Experience</h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
+
+                        <div style={{ padding: '40px 30px', background: '#fff', borderRadius: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', transition: 'transform 0.3s ease' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-10px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                            <FaFilm style={{ fontSize: '3rem', color: '#D4AF37', marginBottom: '25px' }} />
+                            <h3 style={{ marginBottom: '15px' }}>Crystal Clear 4K</h3>
+                            <p style={{ color: '#666', lineHeight: '1.6' }}>Witness every detail with our state-of-the-art Sony 4K projection systems. From Hollywood blockbusters to local masterpieces.</p>
+                        </div>
+
+                        <div style={{ padding: '40px 30px', background: '#fff', borderRadius: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', transition: 'transform 0.3s ease' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-10px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                            <FaChair style={{ fontSize: '3rem', color: '#D4AF37', marginBottom: '25px' }} />
+                            <h3 style={{ marginBottom: '15px' }}>Premium Comfort</h3>
+                            <p style={{ color: '#666', lineHeight: '1.6' }}>Relax in our reclining leather seats with ample legroom. Designed for the ultimate viewing pleasure for you and your family.</p>
+                        </div>
+
+                        <div style={{ padding: '40px 30px', background: '#fff', borderRadius: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', transition: 'transform 0.3s ease' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-10px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                            <FaCoffee style={{ fontSize: '3rem', color: '#D4AF37', marginBottom: '25px' }} />
+                            <h3 style={{ marginBottom: '15px' }}>Buna & Snacks</h3>
+                            <p style={{ color: '#666', lineHeight: '1.6' }}>Enjoy traditional Ethiopian coffee ('Buna') and fresh popcorn. A perfect blend of culture and cinema.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section style={{ padding: '120px 20px', background: '#000', color: '#fff', textAlign: 'center' }}>
+                <div className="container" style={{ maxWidth: '700px' }}>
+                    <h2 style={{ marginBottom: '20px', color: '#D4AF37' }}>Never Miss a Premiere</h2>
+                    <p style={{ marginBottom: '50px', fontSize: '1.2rem', color: '#ccc', fontWeight: '300' }}>Join our community to get updates on the latest Amharic and International movie releases, exclusive events, and discounts.</p>
+                    <form style={{ display: 'flex', gap: '15px', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }} onSubmit={(e) => e.preventDefault()}>
+                        <input type="email" placeholder="Enter your email" style={{ flex: '1', minWidth: '280px', padding: '18px 25px', borderRadius: '50px', border: '1px solid #333', outline: 'none', background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '1rem' }} />
+                        <button className="btn btn-accent" style={{ padding: '18px 40px', borderRadius: '50px', fontSize: '1rem' }}>Subscribe</button>
+                    </form>
+                </div>
+            </section>
+
         </div>
     );
 };
