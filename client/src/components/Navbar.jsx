@@ -3,15 +3,23 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaBars } from 'react-icons/fa';
 import Sidebar from './Sidebar';
+import Modal from './Modal';
 
 const Navbar = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-    const handleLogout = () => {
+    const handleLogoutClick = () => {
+        setIsSidebarOpen(false);
+        setIsLogoutModalOpen(true);
+    };
+
+    const confirmLogout = () => {
         logout();
         navigate('/');
+        setIsLogoutModalOpen(false);
     };
 
     return (
@@ -20,7 +28,7 @@ const Navbar = () => {
                 isOpen={isSidebarOpen}
                 onClose={() => setIsSidebarOpen(false)}
                 user={user}
-                onLogout={handleLogout}
+                onLogout={handleLogoutClick}
             />
 
             <nav style={{ padding: '20px 0', borderBottom: '1px solid #eee', marginBottom: '40px' }}>
@@ -42,6 +50,14 @@ const Navbar = () => {
                     </button>
                 </div>
             </nav>
+
+            <Modal
+                isOpen={isLogoutModalOpen}
+                onClose={() => setIsLogoutModalOpen(false)}
+                onConfirm={confirmLogout}
+                title="Confirm Logout"
+                message="Are you sure you want to log out?"
+            />
         </>
     );
 };
