@@ -4,9 +4,11 @@ import { useAuth } from '../context/AuthContext';
 import { FaBars } from 'react-icons/fa';
 import Sidebar from './Sidebar';
 import Modal from './Modal';
+import { useNotification } from '../context/NotificationContext';
 
 const Navbar = () => {
     const { user, logout } = useAuth();
+    const { showNotification } = useNotification();
     const navigate = useNavigate();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -20,6 +22,7 @@ const Navbar = () => {
         logout();
         navigate('/');
         setIsLogoutModalOpen(false);
+        showNotification("You have been logged out successfully.", "success");
     };
 
     return (
