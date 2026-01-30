@@ -56,17 +56,17 @@ const getDates = () => {
 
 mongoose.connect(process.env.MONGO_URI)
     .then(async () => {
-        console.log('🌱 Seeding Gast Cinema Database...');
+        console.log('Seeding Gast Cinema Database...');
 
         // Clear existing
         await Movie.deleteMany({});
         await Showtime.deleteMany({});
         await User.deleteMany({}); // Warning: Clears all users!
-        console.log('🧹 Old data cleared.');
+        console.log('Old data cleared.');
 
         // Insert Movies
         const createdMovies = await Movie.insertMany(movies);
-        console.log(`🎬 Inserted ${createdMovies.length} movies.`);
+        console.log(`Inserted ${createdMovies.length} movies.`);
 
         // Create Showtimes
         const showtimes = [];
@@ -89,7 +89,7 @@ mongoose.connect(process.env.MONGO_URI)
         });
 
         await Showtime.insertMany(showtimes);
-        console.log(`🎫 Created ${showtimes.length} showtimes.`);
+        console.log(`Created ${showtimes.length} showtimes.`);
 
         // Create Admin User
         // Manually hash to avoid pre-save hook issues during seeding
@@ -103,12 +103,12 @@ mongoose.connect(process.env.MONGO_URI)
             role: 'admin'
         }]);
 
-        console.log('👤 Admin user created: admin@gastcinema.com / admin123');
+        console.log('Admin user created: admin@gastcinema.com / admin123');
 
-        console.log('✅ Seeding Complete!');
+        console.log('Seeding Complete!');
         process.exit();
     })
     .catch(err => {
-        console.error('❌ Seeding Failed:', err);
+        console.error('Seeding Failed:', err);
         process.exit(1);
     });

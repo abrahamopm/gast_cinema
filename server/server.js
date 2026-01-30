@@ -14,8 +14,8 @@ const adminController = require('./controllers/admin');
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('✅ MongoDB Connected'))
-    .catch(err => console.error('❌ DB Connection Error:', err));
+    .then(() => console.log('MongoDB Connected'))
+    .catch(err => console.error('DB Connection Error:', err));
 
 // Auth Helper
 const authenticate = (req) => {
@@ -162,4 +162,4 @@ const server = http.createServer(async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`🚀 (MRN) Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`(MRN) Server running on port ${PORT}`));

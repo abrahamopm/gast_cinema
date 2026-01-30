@@ -201,9 +201,9 @@ const Booking = () => {
                 <Link to={`/movie/${movie?._id}`} style={{ color: '#666', textDecoration: 'none', display: 'inline-block', marginBottom: '10px' }}>← Back to Movie</Link>
                 <h2 style={{ margin: '0 0 10px' }}>{movie ? movie.title : 'Loading...'}</h2>
                 <div style={{ display: 'flex', gap: '20px', color: '#888', fontSize: '0.9rem' }}>
-                    <span>📅 {showtime.date}</span>
-                    <span>⏰ {showtime.time}</span>
-                    <span>📍 {showtime.hall}</span>
+                    <span>Date: {showtime.date}</span>
+                    <span>Time: {showtime.time}</span>
+                    <span>Hall: {showtime.hall}</span>
                 </div>
             </div>
 
