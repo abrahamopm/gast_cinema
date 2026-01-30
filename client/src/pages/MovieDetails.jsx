@@ -36,13 +36,24 @@ const MovieDetails = () => {
     if (!movie) return <div>Loading...</div>;
 
     return (
-        <div className="movie-details" style={{ maxWidth: '1200px', margin: '0 auto', padding: '120px 20px 60px' }}>
+        <div className="movie-details" style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            padding: '120px 20px 60px',
+            position: 'relative',
+            minHeight: '100vh'
+        }}>
             {/* Background Blur Effect */}
-            <div style={{
-                position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-                backgroundImage: `url(${movie.poster})`, backgroundSize: 'cover', filter: 'blur(20px) brightness(0.3)',
-                zIndex: -1
-            }}></div>
+            <img
+                src={movie.poster}
+                alt=""
+                style={{
+                    position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                    objectFit: 'cover', filter: 'blur(20px) brightness(0.3)',
+                    zIndex: -1,
+                    pointerEvents: 'none'
+                }}
+            />
 
             <div style={{ display: 'flex', gap: '60px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
                 <div style={{ flex: '0 0 350px', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>

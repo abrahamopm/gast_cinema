@@ -45,7 +45,7 @@ const Chatbot = () => {
     };
 
     return (
-        <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 3000, fontFamily: 'Lato, sans-serif' }}>
+        <div data-h2d-ignore style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 3000, fontFamily: 'Lato, sans-serif' }}>
 
             {/* Toggle Button */}
             {!isOpen && (

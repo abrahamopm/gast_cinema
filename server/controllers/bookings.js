@@ -1,5 +1,6 @@
 const Booking = require('../models/Booking');
 const Showtime = require('../models/Showtime');
+const { sendJSON, sendError } = require('../utils/httpHelpers');
 
 exports.lockSeats = async (req, res) => {
     const { showtimeId, seats } = req.body;
@@ -8,7 +9,7 @@ exports.lockSeats = async (req, res) => {
 
     try {
         const showtime = await Showtime.findById(showtimeId);
-        if (!showtime) return res.status(404).json({ error: 'Showtime not found' });
+        if (!showtime) return sendError(res, 404, 'Showtime not found');
 
         // Check availability
         const unavailable = [];
@@ -23,7 +24,7 @@ exports.lockSeats = async (req, res) => {
             }
         });
 
-        if (unavailable.length > 0) return res.status(409).json({ error: 'Some seats are already taken', seats: unavailable });
+        if (unavailable.length > 0) return sendJSON(res, 409, { error: 'Some seats are already taken', seats: unavailable });
 
         // Apply locks
         seats.forEach(seat => {
@@ -33,10 +34,10 @@ exports.lockSeats = async (req, res) => {
         });
 
         await showtime.save();
-        res.json({ success: true, message: 'Seats locked' });
+        sendJSON(res, 200, { success: true, message: 'Seats locked' });
 
     } catch (err) {
-        res.status(500).json({ error: 'Lock failed' });
+        sendError(res, 500, 'Lock failed');
     }
 };
 
@@ -48,22 +49,22 @@ exports.releaseSeats = async (req, res) => {
             seats.forEach(seat => {
                 // Only release if locked by this user
                 if (showtime.lockedBy.get(seat) === req.user.id) {
-                    showtime.seats.delete(seat); // Or set to available if you use 'available' explicitly, but delete works if 'undefined' means available
+                    showtime.seats.delete(seat);
                     showtime.lockedBy.delete(seat);
                     showtime.lockExpiry.delete(seat);
                 }
             });
             await showtime.save();
         }
-        res.json({ success: true });
+        sendJSON(res, 200, { success: true });
     } catch (err) {
-        res.status(500).json({ error: 'Release failed' });
+        sendError(res, 500, 'Release failed');
     }
 };
 
 exports.createBooking = async (req, res) => {
     if (req.user.role === 'admin') {
-        return res.status(403).json({ error: 'Admins cannot book tickets.' });
+        return sendError(res, 403, 'Admins cannot book tickets.');
     }
     const { showtimeId, seats, paymentProvider, phone, idempotencyKey } = req.body;
     const userId = req.user.id;
@@ -71,27 +72,23 @@ exports.createBooking = async (req, res) => {
     // Idempotency check
     if (idempotencyKey) {
         const existing = await Booking.findOne({ idempotencyKey });
-        if (existing) return res.json(existing);
+        if (existing) return sendJSON(res, 200, existing);
     }
 
-    // Mock Payment Logic
-    // In real life, we'd call the API here.
-    const paymentSuccess = true; // Always true for now as requested
+    const paymentSuccess = true;
 
-    // In a real atomic transaction, we would start session here
     try {
         const showtime = await Showtime.findById(showtimeId);
-        if (!showtime) return res.status(404).json({ error: 'Showtime not found' });
+        if (!showtime) return sendError(res, 404, 'Showtime not found');
 
         // Final verification
         const conflict = seats.some(seat => {
             const status = showtime.seats.get(seat);
             const lockedBy = showtime.lockedBy.get(seat);
-            // Conflict if taken, or locked by SOMEONE ELSE
             return status === 'taken' || (status === 'pending' && lockedBy && lockedBy !== userId);
         });
 
-        if (conflict) return res.status(409).json({ error: 'Seats no longer available' });
+        if (conflict) return sendError(res, 409, 'Seats no longer available');
 
         // Mark definitely taken
         seats.forEach(seat => {
@@ -114,13 +111,13 @@ exports.createBooking = async (req, res) => {
         });
 
         await booking.save();
-        res.json(booking);
+        sendJSON(res, 200, booking);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Booking failed' });
+        sendError(res, 500, 'Booking failed');
     }
 };
 
 exports.getUserBookings = async (req, res) => {
-    res.json(await Booking.find({ user: req.user.id }).populate('showtime'));
+    sendJSON(res, 200, await Booking.find({ user: req.user.id }).populate('showtime'));
 };

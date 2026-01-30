@@ -1,5 +1,6 @@
 const Booking = require('../models/Booking');
 const Movie = require('../models/Movie');
+const { sendJSON, sendError } = require('../utils/httpHelpers');
 
 exports.getStats = async (req, res) => {
     try {
@@ -11,12 +12,12 @@ exports.getStats = async (req, res) => {
         ]);
         const totalRevenue = revenueAgg.length > 0 ? revenueAgg[0].total : 0;
 
-        res.json({
+        sendJSON(res, 200, {
             totalTickets,
             activeMovies,
             totalRevenue
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, 500, err.message);
     }
 };
