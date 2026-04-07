@@ -2,9 +2,10 @@ const http = require('http');
 const mongoose = require('mongoose');
 const url = require('url');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 require('dotenv').config();
 
-const { parseBody, sendJSON, sendError } = require('./utils/httpHelpers');
+const { parseBody, sendJSON, sendError, serveFile } = require('./utils/httpHelpers');
 
 // Controllers
 const authController = require('./controllers/auth');
@@ -43,7 +44,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     const parsedUrl = url.parse(req.url, true);
-    const path = parsedUrl.pathname;
+    const pathName = parsedUrl.pathname;
     req.query = parsedUrl.query;
 
     // Body Parsing
@@ -57,41 +58,50 @@ const server = http.createServer(async (req, res) => {
 
     // Router
     try {
+        // --- Static Files & Frontend Routes ---
+        if (!pathName.startsWith('/api/')) {
+            const distPath = path.join(__dirname, '..', 'client', 'dist');
+            const filePath = path.join(distPath, pathName);
+            
+            // If it's a specific file request (has extension), try to serve it
+            if (path.extname(pathName)) {
+                return serveFile(res, filePath);
+            }
+            
+            // Otherwise, serve index.html (for React Router support)
+            return serveFile(res, path.join(distPath, 'index.html'));
+        }
+
         // --- Auth Routes ---
-        if (path === '/api/auth/register' && req.method === 'POST') {
+        if (pathName === '/api/auth/register' && req.method === 'POST') {
             return await authController.register(req, res);
         }
-        if (path === '/api/auth/login' && req.method === 'POST') {
+        if (pathName === '/api/auth/login' && req.method === 'POST') {
             return await authController.login(req, res);
         }
-        if (path === '/api/auth/password' && req.method === 'POST') {
+        if (pathName === '/api/auth/password' && req.method === 'POST') {
             authenticate(req);
             return await authController.changePassword(req, res);
         }
 
         // --- Movie Routes ---
-        // GET /api/movies
-        if (path === '/api/movies' && req.method === 'GET') {
+        if (pathName === '/api/movies' && req.method === 'GET') {
             return await moviesController.getMovies(req, res);
         }
-        // POST /api/movies (Protected)
-        if (path === '/api/movies' && req.method === 'POST') {
+        if (pathName === '/api/movies' && req.method === 'POST') {
             authenticate(req);
             return await moviesController.createMovie(req, res);
         }
-        // GET /api/movies/:id
-        let match = path.match(/^\/api\/movies\/([a-f0-9]+)$/);
+        let match = pathName.match(/^\/api\/movies\/([a-f0-9]+)$/);
         if (match && req.method === 'GET') {
             req.params = { id: match[1] };
             return await moviesController.getMovie(req, res);
         }
-        // PUT /api/movies/:id (Protected)
         if (match && req.method === 'PUT') {
             authenticate(req);
             req.params = { id: match[1] };
             return await moviesController.updateMovie(req, res);
         }
-        // DELETE /api/movies/:id (Protected)
         if (match && req.method === 'DELETE') {
             authenticate(req);
             req.params = { id: match[1] };
@@ -99,25 +109,21 @@ const server = http.createServer(async (req, res) => {
         }
 
         // --- Showtimes Routes ---
-        // GET /api/movies/:movieId/showtimes
-        match = path.match(/^\/api\/movies\/([a-f0-9]+)\/showtimes$/);
+        match = pathName.match(/^\/api\/movies\/([a-f0-9]+)\/showtimes$/);
         if (match && req.method === 'GET') {
             req.params = { movieId: match[1] };
             return await moviesController.getShowtimes(req, res);
         }
-        // GET /api/showtimes/:id
-        match = path.match(/^\/api\/showtimes\/([a-f0-9]+)$/);
+        match = pathName.match(/^\/api\/showtimes\/([a-f0-9]+)$/);
         if (match && req.method === 'GET') {
             req.params = { id: match[1] };
             return await moviesController.getShowtimeById(req, res);
         }
-        // POST /api/showtimes (Protected)
-        if (path === '/api/showtimes' && req.method === 'POST') {
+        if (pathName === '/api/showtimes' && req.method === 'POST') {
             authenticate(req);
             return await moviesController.createShowtime(req, res);
         }
-        // DELETE /api/showtimes/:id (Protected)
-        match = path.match(/^\/api\/showtimes\/([a-f0-9]+)$/);
+        match = pathName.match(/^\/api\/showtimes\/([a-f0-9]+)$/);
         if (match && req.method === 'DELETE') {
             authenticate(req);
             req.params = { id: match[1] };
@@ -125,25 +131,25 @@ const server = http.createServer(async (req, res) => {
         }
 
         // --- Admin Routes ---
-        if (path === '/api/admin/stats' && req.method === 'GET') {
+        if (pathName === '/api/admin/stats' && req.method === 'GET') {
             authenticate(req);
             return await adminController.getStats(req, res);
         }
 
         // --- Booking Routes ---
-        if (path === '/api/bookings' && req.method === 'POST') {
+        if (pathName === '/api/bookings' && req.method === 'POST') {
             authenticate(req);
             return await bookingsController.createBooking(req, res);
         }
-        if (path === '/api/bookings/lock' && req.method === 'POST') {
+        if (pathName === '/api/bookings/lock' && req.method === 'POST') {
             authenticate(req);
             return await bookingsController.lockSeats(req, res);
         }
-        if (path === '/api/bookings/release' && req.method === 'POST') {
+        if (pathName === '/api/bookings/release' && req.method === 'POST') {
             authenticate(req);
             return await bookingsController.releaseSeats(req, res);
         }
-        if (path === '/api/bookings' && req.method === 'GET') {
+        if (pathName === '/api/bookings' && req.method === 'GET') {
             authenticate(req);
             return await bookingsController.getUserBookings(req, res);
         }
